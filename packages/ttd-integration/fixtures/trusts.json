@@ -1,0 +1,9 @@
+[
+  {
+    "trustId": "TTD",
+    "trustName": "Tirumala Tirupati Devasthanams",
+    "subTrusts": [
+      { "subTrustId": "SRIVANI", "subTrustName": "SRIVANI Trust" }
+    ]
+  }
+]

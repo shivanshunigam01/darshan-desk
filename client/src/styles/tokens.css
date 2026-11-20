@@ -1,0 +1,171 @@
+:root {
+  /* Brand — Phase 3 palette */
+  --dd-primary: #172b4d;
+  --dd-primary-hover: #1e3a66;
+  --dd-accent: #4f6bed;
+  --dd-accent-soft: #e8edfd;
+
+  --dd-bg: #f7f9fc;
+  --dd-surface: #ffffff;
+  --dd-surface-raised: #ffffff;
+
+  --dd-success: #16835d;
+  --dd-success-soft: #e6f4ef;
+  --dd-warning: #d99220;
+  --dd-warning-soft: #fef6e8;
+  --dd-error: #d64545;
+  --dd-error-soft: #fdecec;
+
+  --dd-text: #172b4d;
+  --dd-text-muted: #64748b;
+  --dd-border: #e2e8f0;
+  --dd-border-strong: #cbd5e1;
+
+  --dd-radius-sm: 8px;
+  --dd-radius-md: 12px;
+  --dd-radius-lg: 16px;
+
+  --dd-shadow-sm: 0 1px 2px rgba(23, 43, 77, 0.06);
+  --dd-shadow-card: 0 1px 3px rgba(23, 43, 77, 0.08), 0 1px 2px rgba(23, 43, 77, 0.04);
+
+  --dd-space-1: 4px;
+  --dd-space-2: 8px;
+  --dd-space-3: 12px;
+  --dd-space-4: 16px;
+  --dd-space-5: 20px;
+  --dd-space-6: 24px;
+  --dd-space-8: 32px;
+
+  --dd-sidebar-width: 16rem;
+  --dd-sidebar-collapsed: 4.25rem;
+  --dd-transition-ui: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --dd-font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --dd-font-serif: 'Cormorant Garamond', Georgia, serif;
+}
+
+.dark {
+  --dd-bg: #0f172a;
+  --dd-surface: #1e293b;
+  --dd-surface-raised: #243044;
+  --dd-text: #f1f5f9;
+  --dd-text-muted: #94a3b8;
+  --dd-border: #334155;
+  --dd-border-strong: #475569;
+  --dd-primary-hover: #2a4a7a;
+  --dd-accent-soft: rgba(79, 107, 237, 0.15);
+  --dd-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dd-transition-ui: 0ms;
+  }
+}
+
+.dd-enter {
+  animation: dd-enter var(--dd-transition-ui) ease-out both;
+}
+
+@keyframes dd-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-enter {
+    animation: none;
+  }
+}
+
+.dd-fade-in {
+  animation: dd-fade-in 220ms ease-out both;
+}
+
+@keyframes dd-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dd-kpi-stagger > * {
+  animation: dd-enter 220ms ease-out both;
+}
+
+.dd-kpi-stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.dd-kpi-stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.dd-kpi-stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.dd-kpi-stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.dd-kpi-stagger > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.dd-kpi-stagger > *:nth-child(6) {
+  animation-delay: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-kpi-stagger > * {
+    animation: none;
+  }
+}
+
+.dd-nav-rail {
+  position: relative;
+}
+
+.dd-nav-rail::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 0 2px 2px 0;
+  background: var(--dd-accent);
+  transform: translateY(-50%);
+  transition: height var(--dd-transition-ui);
+}
+
+.dd-nav-rail[aria-current='page']::before,
+.dd-nav-rail.active::before {
+  height: 60%;
+}
+
+.dd-skeleton {
+  background: linear-gradient(90deg, var(--dd-border) 25%, color-mix(in srgb, var(--dd-border) 60%, transparent) 50%, var(--dd-border) 75%);
+  background-size: 200% 100%;
+  animation: dd-shimmer 1.2s ease-in-out infinite;
+  border-radius: var(--dd-radius-sm);
+}
+
+@keyframes dd-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-skeleton {
+    animation: none;
+    background: var(--dd-border);
+  }
+}

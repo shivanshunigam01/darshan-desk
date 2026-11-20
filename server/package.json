@@ -1,0 +1,40 @@
+{
+  "name": "darshan-desk-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand tests/validationRules.test.js tests/quota.api.test.js tests/ttd.api.test.js tests/ttdAccounts.authorization.test.js tests/extension.api.test.js tests/extensionAuth.test.js tests/extension.integration.test.js tests/maskSensitive.test.js tests/bookingOutcome.integration.test.js tests/reliability.api.test.js tests/srivaniPolicy.fixture.test.js tests/license.test.js tests/license.middleware.unit.test.js tests/license.enforcement.test.js tests/tenantIsolation.integration.test.js tests/tenantIsolation.logic.test.js tests/security.api.test.js tests/platform.commandCenter.test.js",
+    "test:security": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand tests/license.enforcement.test.js tests/security.api.test.js tests/tenantIsolation.logic.test.js",
+    "test:tenant-integration": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand tests/tenantIsolation.integration.test.js",
+    "start:prod": "NODE_ENV=production node src/index.js",
+    "test:integration": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js --runInBand tests/api.test.js tests/validation.test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.0",
+    "uuid": "^11.0.3",
+    "@darshan-desk/quota": "1.0.0",
+    "@darshan-desk/fill-engine": "1.0.0",
+    "@darshan-desk/reliability": "1.0.0",
+    "@darshan-desk/ttd-integration": "1.0.0",
+    "@sentry/node": "^8.38.0",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^10.1.2",
+    "supertest": "^7.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "transform": {}
+  }
+}

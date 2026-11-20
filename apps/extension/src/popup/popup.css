@@ -1,0 +1,169 @@
+body {
+  margin: 0;
+  width: 380px;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: #1c1917;
+  background: #fafaf9;
+}
+
+.card {
+  border: 1px solid #e7e5e4;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  margin: 0.5rem 0 0.75rem;
+  background: #fffbeb;
+}
+.actions {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+.actions button {
+  flex: 1;
+}
+.linkish {
+  background: transparent;
+  color: #57534e;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.wrap {
+  padding: 12px;
+  position: relative;
+  min-height: 200px;
+}
+
+.loader-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(250, 250, 249, 0.94);
+  border-radius: 8px;
+}
+
+.loader-card {
+  text-align: center;
+  padding: 8px 16px;
+  max-width: 300px;
+}
+
+.loader-spinner {
+  width: 30px;
+  height: 30px;
+  margin: 0 auto 10px;
+  border: 3px solid #e7e5e4;
+  border-top-color: #b45309;
+  border-radius: 50%;
+  animation: dd-popup-spin 0.75s linear infinite;
+}
+
+.loader-title {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.loader-hint {
+  margin: 6px 0 0;
+  font-size: 0.72rem;
+}
+
+@keyframes dd-popup-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+h1 {
+  font-size: 1rem;
+  margin: 0 0 8px;
+}
+
+.muted {
+  color: #57534e;
+  font-size: 0.82rem;
+}
+
+input,
+select,
+button {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e7e5e4;
+}
+
+button {
+  background: #b45309;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #fff;
+  color: #1c1917;
+  border: 1px solid #e7e5e4;
+}
+
+.row {
+  margin-bottom: 10px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pill.err {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.pill.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.results {
+  max-height: 160px;
+  overflow: auto;
+  font-size: 0.78rem;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  padding: 6px;
+  background: #fff;
+}
+
+.checkbox {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.checkbox input {
+  width: auto;
+  margin: 0;
+}
+
+.warn {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 0.78rem;
+  margin: 8px 0;
+}

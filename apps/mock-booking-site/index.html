@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DarshanDesk Mock — Supported SRIVANI Form (dev only)</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 720px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      fieldset {
+        margin-bottom: 1.25rem;
+        border: 1px solid #d6d3d1;
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin: 0.6rem 0 0.2rem;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 0.5rem;
+      }
+      .hint {
+        color: #57534e;
+        font-size: 0.9rem;
+      }
+      button[type='submit'],
+      button {
+        background: #b45309;
+        color: #fff;
+        border: none;
+        padding: 0.7rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #57534e;
+      }
+      .steps {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-bottom: 1rem;
+      }
+      .step {
+        background: #e7e5e4;
+        color: #1c1917;
+        font-size: 0.85rem;
+      }
+      .step.active {
+        background: #b45309;
+        color: #fff;
+      }
+      .panel[hidden] {
+        display: none;
+      }
+      .err {
+        color: #b91c1c;
+      }
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body data-dd-mapping="mock-srivani-v1" data-dd-form-version="3" data-dd-active-step="quota">
+    <h1>Mock supported booking form</h1>
+    <p class="hint">
+      Development-only page with verified <code>data-dd-field</code> selectors. Operator must submit manually. OTP,
+      password, and payment fields are intentionally absent.
+    </p>
+
+    <div id="root"></div>
+    <script type="module" src="/mock-booking/mock-form.js"></script>
+  </body>
+</html>

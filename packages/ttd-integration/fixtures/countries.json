@@ -1,0 +1,10 @@
+[
+  {
+    "countryId": "1",
+    "countryName": "India",
+    "states": [
+      { "stateId": "28", "stateName": "Andhra Pradesh" },
+      { "stateId": "36", "stateName": "Telangana" }
+    ]
+  }
+]

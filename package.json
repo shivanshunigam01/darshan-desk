@@ -1,0 +1,29 @@
+{
+  "name": "darshan-desk",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "server",
+    "client",
+    "packages/quota",
+    "packages/fill-engine",
+    "packages/reliability",
+    "packages/ttd-integration",
+    "packages/shared",
+    "apps/extension"
+  ],
+  "scripts": {
+    "predev": "npm run build -w @darshan-desk/quota && npm run build -w @darshan-desk/fill-engine && npm run build -w @darshan-desk/reliability && npm run build -w @darshan-desk/ttd-integration",
+    "dev": "npm run predev && concurrently \"npm run dev -w server\" \"npm run dev -w @darshan-desk/extension\"",
+    "dev:legacy-dashboard": "npm run predev && concurrently \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:api": "npm run predev && npm run dev -w server",
+    "test": "npm run test -w @darshan-desk/quota && npm run test -w @darshan-desk/fill-engine && npm run test -w @darshan-desk/reliability && npm run test -w @darshan-desk/ttd-integration && npm run test -w @darshan-desk/extension && npm run test -w server && npm run test -w client",
+    "build": "npm run build -w @darshan-desk/quota && npm run build -w @darshan-desk/fill-engine && npm run build -w @darshan-desk/reliability && npm run build -w @darshan-desk/ttd-integration && npm run build:extension",
+    "build:extension": "npm run build -w @darshan-desk/fill-engine && npm run build:production -w @darshan-desk/extension",
+    "health-check": "node scripts/health-check.mjs",
+    "migrate:indexes": "node scripts/migrate-indexes.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

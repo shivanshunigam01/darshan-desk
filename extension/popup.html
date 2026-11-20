@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        width: 280px;
+        padding: 12px;
+        margin: 0;
+      }
+      input {
+        width: 100%;
+        margin: 8px 0;
+        padding: 6px;
+      }
+      button {
+        width: 100%;
+        padding: 8px;
+        background: #b45309;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .muted {
+        font-size: 12px;
+        color: #57534e;
+      }
+    </style>
+  </head>
+  <body>
+    <strong>DarshanDesk pairing</strong>
+    <p class="muted">Paste the token from the preparation screen. No declarations or payment automation.</p>
+    <input id="token" placeholder="Pairing token" />
+    <button id="save">Save &amp; connect</button>
+    <p id="status" class="muted"></p>
+    <script src="popup.js"></script>
+  </body>
+</html>

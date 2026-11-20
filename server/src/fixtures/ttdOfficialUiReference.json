@@ -1,0 +1,71 @@
+{
+  "referenceId": "ttd-screenshots-2026-11",
+  "capturedFrom": "TTD Online Services — functional UI reference (not a live API contract)",
+  "trustDonation": {
+    "trustName": "Sri Venkateswara Aalayala Nirmanam Trust (SRIVANI TRUST)",
+    "minimumDonationNote": "Minimum donation contribution accepted is Rupee 10000",
+    "declarations": [
+      "Corpus vs General Donation split (50/50) — operator must select on official site",
+      "Indian citizenship declaration — operator must select on official site"
+    ],
+    "automationExclusions": ["declaration checkboxes", "Continue submit", "CAPTCHA", "OTP", "payment"]
+  },
+  "breakDarshanChoice": {
+    "prompt": "Do you wish to avail TTD Break Darshan?",
+    "options": {
+      "CURRENT": "Current Break Darshan date (subject to availability)",
+      "ADVANCE": "Future Break Darshan date"
+    }
+  },
+  "pilgrimDetailsScreen": {
+    "title": "Pilgrim Details for TTD Break Darshan",
+    "columns": ["Name (As per ID Proof)", "Age", "Gender", "ID Proof Type", "ID Proof Number"],
+    "captchaRequired": true,
+    "maxPilgrimsCurrentBreakDarshan": 4
+  },
+  "quotaStatusBar": {
+    "fields": [
+      "Quota Release Time",
+      "System Time",
+      "Remaining Time",
+      "Available Quota for (Current Day)",
+      "Reporting Time",
+      "Payment Pending",
+      "Success"
+    ],
+    "sampleFixtureMapping": {
+      "quotaReleaseTime": "11:03:00",
+      "reportingTime": "04:00 PM",
+      "maximumCurrentPilgrims": 4,
+      "maximumAdvancePilgrims": 9,
+      "minimumDonation": 10000
+    },
+    "operatorNotes": [
+      "Available quota may read 0 while dashboard still showed positive data earlier — treat as stale observation",
+      "Continue is enabled only after quota release; early Continue is flagged as suspicious by TTD"
+    ]
+  },
+  "confirmationModals": {
+    "breakDarshanRules": [
+      "Quota released at designated time",
+      "Maximum 4 pilgrims per current transaction",
+      "7-day restriction between break darshans",
+      "No cancellation or refund",
+      "Accommodation not available for this category"
+    ],
+    "proceedQuestion": "Do you want to proceed?"
+  },
+  "darshanDeskWorkflowSteps": [
+    "Agency operator logs into DarshanDesk",
+    "Select authorized TTD account reference",
+    "Select SRIVANI Trust category",
+    "Enter proposed donation amount",
+    "Select Current or Advance booking",
+    "Select saved pilgrims",
+    "Validate preparation",
+    "Connect browser extension",
+    "Extension assists permitted fields only",
+    "Operator completes declarations, auth, submit, payment on TTD",
+    "Record verified outcome with official evidence"
+  ]
+}

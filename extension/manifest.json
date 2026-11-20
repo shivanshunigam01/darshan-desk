@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "DarshanDesk TTD Assist",
+  "version": "1.0.0",
+  "description": "Assists agency operators with permitted field entry on the official TTD site when paired with DarshanDesk.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://*.tirumala.org/*", "https://ttdsevaonline.com/*", "http://localhost:4000/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "DarshanDesk"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.tirumala.org/*", "https://ttdsevaonline.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

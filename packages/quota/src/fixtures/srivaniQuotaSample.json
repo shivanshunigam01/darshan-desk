@@ -1,0 +1,19 @@
+{
+  "quotaCount": 42,
+  "slottime": "04:00 PM",
+  "minpersons": "1",
+  "maxpersons": "4",
+  "advanceminpersons": "1",
+  "advancemaxpersons": "9",
+  "noOfladdus": 2,
+  "minAmount": 10000,
+  "advanceminAmount": 10000,
+  "darshanAmount": 0,
+  "maxAmount": 500000,
+  "advancemaxAmount": 500000,
+  "success": 128,
+  "pending": 6,
+  "failed": 2,
+  "released": 1,
+  "quotaReleaseTime": "11:03:00"
+}

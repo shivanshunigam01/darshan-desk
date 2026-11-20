@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "motionsites": {
+      "url": "https://motionsites.ai/api/mcp"
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": ["-y", "shadcn@latest", "mcp"],
+      "cwd": "${workspaceFolder}/client"
+    }
+  }
+}

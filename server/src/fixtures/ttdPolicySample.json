@@ -1,0 +1,13 @@
+{
+  "source": "ttd-official-api-sample",
+  "capturedAt": "2026-11-15T06:30:00.000Z",
+  "minimumDonation": 10000,
+  "maximumDonation": 500000,
+  "maximumCurrentPilgrims": 4,
+  "maximumAdvancePilgrims": 9,
+  "releaseTime": "11:03:00",
+  "reportingTime": "04:00 PM",
+  "policyVersion": "srivani-sample-v1",
+  "trustCategories": ["SRIVANI"],
+  "bookingCategories": ["CURRENT", "ADVANCE"]
+}
