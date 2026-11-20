@@ -27,7 +27,7 @@ sudo chown -R $USER:$USER /var/log/darshandesk
 
 ```bash
 cd ~
-git clone https://github.com/YOUR_USER/darshan-desk.git
+git clone https://github.com/shivanshunigam01/darshan-desk.git
 cd darshan-desk
 
 npm ci

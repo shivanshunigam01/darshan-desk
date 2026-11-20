@@ -17,8 +17,11 @@ MERN SaaS module for agency operators to prepare SRIVANI trust bookings against 
 
 Legacy dashboard: `npm run dev:legacy-dashboard` (client on :5173).
 
-**Production API on EC2:** [EC2_UBUNTU_NGINX.md](./EC2_UBUNTU_NGINX.md)  
-**Extension download page:** `apps/landing/` (serve with Nginx — see same guide).
+**GitHub:** https://github.com/shivanshunigam01/darshan-desk  
+
+**Production (copy-paste commands):** [PRODUCTION_COMMANDS.md](./PRODUCTION_COMMANDS.md) — EC2, **PM2**, **Nginx**, **Certbot**  
+**Longer guide:** [EC2_UBUNTU_NGINX.md](./EC2_UBUNTU_NGINX.md)  
+**Extension landing / ZIP:** `apps/landing/` → Nginx at `www.yourdomain.com`
 
 **Demo login:** `operator@darshandesk.local` / `operator123`  
 **Admin (policy CRUD):** `admin@darshandesk.local` / `admin123`
