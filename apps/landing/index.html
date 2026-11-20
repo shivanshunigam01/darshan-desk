@@ -5,245 +5,362 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="DarshanDesk — Chrome extension for agency SRIVANI booking preparation and official TTD pilgrim field assist."
+      content="DarshanDesk — Beautiful agency workflow for SRIVANI Tirumala pilgrim preparation and Chrome autofill assist."
     />
-    <title>DarshanDesk — SRIVANI prep for Tirumala pilgrims</title>
+    <title>DarshanDesk — Pilgrim preparation for Tirumala</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
         --red: #b80012;
-        --gold: #d4a017;
-        --black: #1c1917;
+        --red-soft: #e11d48;
+        --gold: #eab308;
+        --gold-deep: #ca8a04;
+        --ink: #1c1917;
         --muted: #57534e;
         --soft: #78716c;
-        --bg: #fafaf9;
-        --blush: #fff5f5;
+        --cream: #fffbeb;
+        --white: #ffffff;
       }
       * {
         box-sizing: border-box;
       }
+      html {
+        scroll-behavior: smooth;
+      }
       body {
         margin: 0;
         font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-        background: var(--bg);
-        color: var(--black);
-        line-height: 1.55;
+        color: var(--ink);
+        background: #fafaf9;
+        line-height: 1.6;
       }
+      .display {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-weight: 700;
+      }
+      /* —— Hero —— */
       .hero {
         position: relative;
-        color: #fff;
-        padding: 3.5rem 1.25rem 4rem;
-        overflow: hidden;
-        min-height: 420px;
+        min-height: 92vh;
         display: flex;
-        align-items: flex-end;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.25rem 4rem;
+        overflow: hidden;
       }
-      .hero-bg {
+      .hero-media {
+        position: absolute;
+        inset: 0;
+      }
+      .hero-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1.03);
+      }
+      .hero-shade {
         position: absolute;
         inset: 0;
         background:
-          linear-gradient(160deg, rgba(28, 25, 23, 0.88) 0%, rgba(61, 10, 18, 0.75) 45%, rgba(184, 0, 18, 0.55) 100%),
-          url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Tirumala_09092016.jpg/1600px-Tirumala_09092016.jpg')
-            center / cover no-repeat;
+          linear-gradient(105deg, rgba(28, 25, 23, 0.92) 0%, rgba(61, 10, 18, 0.78) 42%, rgba(184, 0, 18, 0.45) 100%),
+          radial-gradient(ellipse 80% 60% at 70% 20%, rgba(234, 179, 8, 0.15), transparent);
       }
-      .hero-inner {
+      .hero-content {
         position: relative;
-        z-index: 1;
-        max-width: 920px;
-        margin: 0 auto;
-        width: 100%;
+        z-index: 2;
+        max-width: 720px;
+        text-align: center;
+        color: #fff;
       }
-      .badge {
-        display: inline-block;
-        font-size: 0.68rem;
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.7rem;
         font-weight: 800;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #fde68a;
-        background: rgba(212, 160, 23, 0.15);
-        border: 1px solid rgba(212, 160, 23, 0.45);
-        padding: 0.35rem 0.75rem;
+        padding: 0.45rem 1rem;
         border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(234, 179, 8, 0.45);
+        color: #fde68a;
+        backdrop-filter: blur(8px);
       }
       .hero h1 {
-        font-size: clamp(2.1rem, 6vw, 3rem);
-        font-weight: 800;
-        margin: 0.85rem 0 0.5rem;
-        letter-spacing: -0.02em;
-        text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+        font-size: clamp(2.75rem, 8vw, 4.25rem);
+        margin: 1rem 0 0.5rem;
+        line-height: 1.05;
+        text-shadow: 0 4px 40px rgba(0, 0, 0, 0.5);
       }
-      .hero .lead {
-        max-width: 40rem;
-        font-size: 1.08rem;
+      .hero h1 span {
+        display: block;
+        font-size: 0.42em;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #fca5a5;
+        margin-bottom: 0.35rem;
+      }
+      .hero-tagline {
+        font-size: 1.12rem;
         color: #e7e5e4;
-        margin: 0 0 1.5rem;
+        max-width: 34rem;
+        margin: 0 auto 2rem;
       }
-      .hero-actions {
+      .hero-btns {
         display: flex;
         flex-wrap: wrap;
-        gap: 0.75rem;
+        gap: 0.85rem;
+        justify-content: center;
+      }
+      .btn-primary {
+        display: inline-flex;
         align-items: center;
-      }
-      .btn {
-        display: inline-block;
-        padding: 0.95rem 1.6rem;
-        background: linear-gradient(180deg, #fff 0%, #fef2f2 100%);
-        color: var(--red) !important;
-        text-decoration: none;
+        gap: 0.5rem;
+        padding: 1rem 1.75rem;
         font-weight: 800;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
         font-size: 0.95rem;
-        border: 1px solid rgba(212, 160, 23, 0.35);
+        text-decoration: none;
+        color: var(--red) !important;
+        background: linear-gradient(180deg, #fff 0%, var(--cream) 100%);
+        border-radius: 14px;
+        border: 1px solid rgba(234, 179, 8, 0.5);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+        transition: transform 0.2s, box-shadow 0.2s;
       }
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 36px rgba(184, 0, 18, 0.35);
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 56px rgba(184, 0, 18, 0.4);
       }
-      .btn-outline {
-        background: rgba(0, 0, 0, 0.25);
+      .btn-ghost {
         color: #fff !important;
-        border: 2px solid rgba(255, 255, 255, 0.55);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        backdrop-filter: blur(6px);
         box-shadow: none;
       }
-      .wrap {
-        max-width: 920px;
-        margin: 0 auto;
-        padding: 2.25rem 1.25rem 3.5rem;
+      .scroll-hint {
+        position: absolute;
+        bottom: 1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.72rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
       }
-      .section-title {
-        font-size: 1.4rem;
-        font-weight: 800;
+      /* —— Gallery bento —— */
+      .section {
+        padding: 4rem 1.25rem;
+      }
+      .section-head {
+        max-width: 640px;
+        margin: 0 auto 2.5rem;
+        text-align: center;
+      }
+      .section-head h2 {
+        font-size: clamp(1.75rem, 4vw, 2.35rem);
         color: var(--red);
-        margin: 0 0 0.35rem;
+        margin: 0 0 0.5rem;
       }
-      .section-sub {
+      .section-head p {
+        margin: 0;
         color: var(--soft);
-        font-size: 0.92rem;
-        margin: 0 0 1.25rem;
+        font-size: 0.98rem;
       }
-      .media-grid {
+      .bento {
+        max-width: 1100px;
+        margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: repeat(12, 1fr);
+        grid-auto-rows: 200px;
         gap: 1rem;
-        margin-bottom: 2.5rem;
       }
-      .media-card {
-        border-radius: 16px;
-        overflow: hidden;
-        border: 1px solid #e7e5e4;
-        background: #fff;
-        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
-      }
-      .media-card img {
-        width: 100%;
-        height: 180px;
-        object-fit: cover;
-        display: block;
-      }
-      .media-card figcaption {
-        padding: 0.75rem 1rem;
-        font-size: 0.82rem;
-        color: var(--muted);
-      }
-      .video-block {
-        margin-bottom: 2.5rem;
+      .bento-item {
+        position: relative;
         border-radius: 20px;
         overflow: hidden;
-        border: 2px solid #fecaca;
-        box-shadow: 0 12px 40px rgba(184, 0, 18, 0.12);
-        background: #1c1917;
+        box-shadow: 0 12px 40px rgba(28, 25, 23, 0.12);
       }
-      .video-block h2 {
-        margin: 0;
-        padding: 1rem 1.25rem;
-        font-size: 1rem;
-        color: #fde68a;
-        background: linear-gradient(90deg, #3d0a12, var(--red));
-      }
-      .video-ratio {
-        position: relative;
-        padding-bottom: 56.25%;
-        height: 0;
-      }
-      .video-ratio iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
+      .bento-item img {
         width: 100%;
         height: 100%;
-        border: 0;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+      }
+      .bento-item:hover img {
+        transform: scale(1.06);
+      }
+      .bento-item::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(28, 25, 23, 0.75) 0%, transparent 55%);
+      }
+      .bento-item span {
+        position: absolute;
+        z-index: 1;
+        left: 1.1rem;
+        bottom: 1rem;
+        color: #fff;
+        font-size: 0.88rem;
+        font-weight: 700;
+        text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+      }
+      .span-7 {
+        grid-column: span 7;
+      }
+      .span-5 {
+        grid-column: span 5;
+      }
+      .span-4 {
+        grid-column: span 4;
+      }
+      .span-8 {
+        grid-column: span 8;
+      }
+      .row-tall {
+        grid-row: span 2;
+      }
+      @media (max-width: 768px) {
+        .bento {
+          grid-template-columns: 1fr;
+          grid-auto-rows: 220px;
+        }
+        .span-7,
+        .span-5,
+        .span-4,
+        .span-8 {
+          grid-column: span 1;
+        }
+        .row-tall {
+          grid-row: span 1;
+        }
+      }
+      /* —— Features —— */
+      .features-wrap {
+        background: linear-gradient(180deg, #fff 0%, var(--cream) 50%, #fff5f5 100%);
+        border-top: 1px solid #fecaca;
+        border-bottom: 1px solid #fecaca;
       }
       .features {
+        max-width: 1100px;
+        margin: 0 auto;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 1rem;
-        margin-bottom: 2rem;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.15rem;
       }
       .feat {
-        background: #fff;
-        border: 1px solid #e7e5e4;
-        border-radius: 16px;
-        padding: 1.15rem 1.25rem;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+        background: var(--white);
+        border-radius: 18px;
+        padding: 1.35rem 1.4rem;
+        border: 1px solid #f5f5f4;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        transition: border-color 0.2s, transform 0.2s;
+      }
+      .feat:hover {
+        border-color: #fecaca;
+        transform: translateY(-2px);
+      }
+      .feat-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #fff5f5, #fffbeb);
+        border: 1px solid #fecaca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-bottom: 0.75rem;
       }
       .feat h3 {
-        margin: 0 0 0.4rem;
-        font-size: 0.95rem;
-        font-weight: 700;
+        margin: 0 0 0.35rem;
+        font-size: 1rem;
+        color: var(--ink);
       }
       .feat p {
         margin: 0;
-        font-size: 0.88rem;
+        font-size: 0.86rem;
         color: var(--soft);
       }
-      .feat .icon {
-        font-size: 1.35rem;
-        margin-bottom: 0.35rem;
+      /* —— CTA band with image —— */
+      .cta-band {
+        position: relative;
+        margin: 3rem auto;
+        max-width: 1100px;
+        border-radius: 24px;
+        overflow: hidden;
+        min-height: 280px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+      }
+      .cta-band img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .cta-band .veil {
+        position: absolute;
+        inset: 0;
+        background: rgba(61, 10, 18, 0.82);
+      }
+      .cta-inner {
+        position: relative;
+        z-index: 1;
+        color: #fff;
+      }
+      .cta-inner h2 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        margin: 0 0 0.75rem;
+      }
+      .cta-inner p {
+        margin: 0 0 1.5rem;
+        color: #e7e5e4;
+        font-size: 0.95rem;
+      }
+      /* —— Cards —— */
+      .cards {
+        max-width: 720px;
+        margin: 0 auto;
       }
       .card {
         background: #fff;
+        border-radius: 18px;
+        padding: 1.5rem 1.65rem;
+        margin-bottom: 1.15rem;
         border: 1px solid #e7e5e4;
-        border-radius: 16px;
-        padding: 1.35rem 1.5rem;
-        margin-bottom: 1rem;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
       }
       .card h2 {
-        margin: 0 0 0.75rem;
+        margin: 0 0 0.85rem;
         font-size: 1.05rem;
         color: var(--red);
       }
-      .card ol {
+      .card ol,
+      .card ul {
         margin: 0;
         padding-left: 1.2rem;
         color: var(--muted);
         font-size: 0.92rem;
       }
       .card li {
-        margin-bottom: 0.45rem;
+        margin-bottom: 0.5rem;
       }
-      .compliance {
-        background: var(--blush);
-        border-color: #fecaca;
-      }
-      .compliance ul {
-        margin: 0;
-        padding-left: 1.2rem;
-        font-size: 0.88rem;
-        color: var(--muted);
-      }
-      .cta-strip {
-        text-align: center;
-        padding: 2rem 1rem;
-        margin: 2rem 0;
-        border-radius: 20px;
-        background: linear-gradient(135deg, var(--blush), #fff);
-        border: 1px solid #fecaca;
+      .card-soft {
+        background: var(--cream);
+        border-color: #fde68a;
       }
       code {
         font-size: 0.85em;
@@ -253,165 +370,193 @@
       }
       footer {
         text-align: center;
-        font-size: 0.75rem;
+        padding: 2.5rem 1.25rem 3rem;
+        font-size: 0.78rem;
         color: var(--soft);
-        padding: 0 1rem 2rem;
-        line-height: 1.45;
+        line-height: 1.6;
+      }
+      footer a {
+        color: var(--red);
       }
     </style>
   </head>
   <body>
     <header class="hero">
-      <div class="hero-bg" aria-hidden="true"></div>
-      <div class="hero-inner">
-        <span class="badge">🪔 SRIVANI · Tirumala prep</span>
-        <h1>DarshanDesk</h1>
-        <p class="lead">
-          A Chrome extension for travel agencies—prepare pilgrim groups, validate donations, and assist filling official
-          TTD fields with devotion and discipline. You still complete captcha and submit on the portal.
+      <div class="hero-media">
+        <img
+          src="https://images.unsplash.com/photo-1564507592337-c60675799773?auto=format&fit=crop&w=2000&q=85"
+          alt=""
+          fetchpriority="high"
+        />
+      </div>
+      <div class="hero-shade" aria-hidden="true"></div>
+      <div class="hero-content">
+        <span class="pill">✦ Chrome extension for agencies</span>
+        <h1 class="display">
+          <span>SRIVANI · Tirumala</span>
+          DarshanDesk
+        </h1>
+        <p class="hero-tagline">
+          Prepare pilgrim groups with care, validate donations, and assist filling official TTD fields—while you stay in
+          control of captcha, declaration, and payment.
         </p>
-        <div class="hero-actions">
+        <div class="hero-btns">
           <a
-            class="btn"
+            class="btn-primary"
             href="https://drive.google.com/uc?export=download&amp;id=1hSFYVpRUdOgYf-bfa4hsc-bIovUCynoP"
             target="_blank"
             rel="noopener noreferrer"
-            >Download extension v1.0.0</a
+            >⬇ Download v1.0.0</a
           >
-          <a class="btn btn-outline" href="#install">How to install</a>
+          <a class="btn-primary btn-ghost" href="#install">Install guide</a>
         </div>
       </div>
+      <p class="scroll-hint">Scroll</p>
     </header>
 
-    <main class="wrap">
-      <h2 class="section-title">Tirumala inspiration</h2>
-      <p class="section-sub">Temple imagery from open Wikimedia Commons (not affiliated with TTD).</p>
-      <div class="media-grid">
-        <figure class="media-card">
+    <section class="section">
+      <div class="section-head">
+        <h2 class="display">Spirit of the journey</h2>
+        <p>Photography from Unsplash — for inspiration; DarshanDesk is not affiliated with TTD.</p>
+      </div>
+      <div class="bento">
+        <figure class="bento-item span-7 row-tall">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Sri_Venkateswara_Temple_Tirumala.jpg/960px-Sri_Venkateswara_Temple_Tirumala.jpg"
-            alt="Sri Venkateswara Temple, Tirumala"
+            src="https://images.unsplash.com/photo-1582510001153-5c4c73c1529a?auto=format&fit=crop&w=1400&q=80"
+            alt="Indian temple architecture"
             loading="lazy"
           />
-          <figcaption>Sri Venkateswara Temple — Tirumala</figcaption>
+          <span>Heritage &amp; devotion</span>
         </figure>
-        <figure class="media-card">
+        <figure class="bento-item span-5">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Tirumala_0892.jpg/960px-Tirumala_0892.jpg"
-            alt="View of Tirumala hills"
+            src="https://images.unsplash.com/photo-1605647540924-6ffbd39d34f5?auto=format&fit=crop&w=1000&q=80"
+            alt="Oil lamps"
             loading="lazy"
           />
-          <figcaption>Tirumala hills — seven sacred hills</figcaption>
+          <span>Sacred light</span>
         </figure>
-        <figure class="media-card">
+        <figure class="bento-item span-4">
           <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Venkateswara_Temple_Tirupati_Entrance.jpg/960px-Venkateswara_Temple_Tirupati_Entrance.jpg"
-            alt="Temple entrance Tirupati"
+            src="https://images.unsplash.com/photo-1609137144813-7d9921338ee1?auto=format&fit=crop&w=900&q=80"
+            alt="Hands in prayer"
             loading="lazy"
           />
-          <figcaption>Entrance to the hill temple complex</figcaption>
+          <span>Prayer</span>
+        </figure>
+        <figure class="bento-item span-8">
+          <img
+            src="https://images.unsplash.com/photo-1524492412937-336ce98d419f?auto=format&fit=crop&w=1400&q=80"
+            alt="Golden temple details"
+            loading="lazy"
+          />
+          <span>Golden shrines</span>
         </figure>
       </div>
+    </section>
 
-      <section class="video-block" aria-labelledby="video-title">
-        <h2 id="video-title">🙏 Glimpse of Tirumala (video)</h2>
-        <div class="video-ratio">
-          <iframe
-            title="Tirumala Tirupati temple darshan"
-            src="https://www.youtube-nocookie.com/embed/KiNWtxJ4Q0U?rel=0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen
-            loading="lazy"
-          ></iframe>
-        </div>
-      </section>
-
-      <h2 class="section-title">Everything in the extension</h2>
-      <p class="section-sub">Built for agency operators—not a shortcut around official TTD rules.</p>
+    <section class="section features-wrap">
+      <div class="section-head">
+        <h2 class="display">Everything in one extension</h2>
+        <p>Purpose-built for Tirupati booking agencies and their operators.</p>
+      </div>
       <div class="features">
         <article class="feat">
-          <div class="icon">🏠</div>
+          <div class="feat-icon">🏠</div>
           <h3>Agency dashboard</h3>
-          <p>Team users, pilgrims, TTD accounts, preparations, and validation stats at a glance.</p>
+          <p>Users, pilgrims, TTD accounts, preparations, and validation at a glance.</p>
         </article>
         <article class="feat">
-          <div class="icon">👤</div>
-          <h3>Sign up &amp; sign in</h3>
-          <p>Agency name, email, and password—cloud synced to your secure backend.</p>
+          <div class="feat-icon">👤</div>
+          <h3>Register &amp; sign in</h3>
+          <p>Agency name, email, password—secure cloud backend, no extra dashboard.</p>
         </article>
         <article class="feat">
-          <div class="icon">🔐</div>
+          <div class="feat-icon">🔐</div>
           <h3>TTD accounts</h3>
-          <p>Labelled logins, authorize for booking, device-only password for login assist.</p>
+          <p>Labelled logins, authorize for booking, device-only login assist.</p>
         </article>
         <article class="feat">
-          <div class="icon">🙏</div>
+          <div class="feat-icon">🙏</div>
           <h3>Pilgrim catalog</h3>
-          <p>Search and manage pilgrims with ID details for SRIVANI groups.</p>
+          <p>Search, add, and sync pilgrims for each SRIVANI group.</p>
         </article>
         <article class="feat">
-          <div class="icon">📋</div>
-          <h3>Booking preparation</h3>
-          <p>Validate donation vs pilgrim count, consent, and connect for autofill.</p>
+          <div class="feat-icon">📋</div>
+          <h3>Preparation &amp; consent</h3>
+          <p>Validate donation vs headcount before you open the portal.</p>
         </article>
         <article class="feat">
-          <div class="icon">✨</div>
+          <div class="feat-icon">✨</div>
           <h3>Sync &amp; Fill</h3>
-          <p>Server sync → pilgrim selection → live field assist on Pilgrim Details.</p>
+          <p>Server sync → pilgrim pick → live assist on Pilgrim Details.</p>
         </article>
         <article class="feat">
-          <div class="icon">🔍</div>
+          <div class="feat-icon">🔍</div>
           <h3>Validate on page</h3>
-          <p>Check fields before you submit manually on TTD.</p>
+          <p>Review fields before manual submit on TTD.</p>
         </article>
         <article class="feat">
-          <div class="icon">🌐</div>
-          <h3>English · हिंदी · తెలుగు</h3>
-          <p>Operator-friendly languages in Settings.</p>
+          <div class="feat-icon">🌐</div>
+          <h3>EN · HI · TE</h3>
+          <p>English, हिंदी, తెలుగు in Settings.</p>
         </article>
         <article class="feat">
-          <div class="icon">🛡️</div>
-          <h3>Security</h3>
-          <p>TTD passwords on device only; agency data isolated per tenant.</p>
+          <div class="feat-icon">🛡️</div>
+          <h3>Security first</h3>
+          <p>TTD passwords on device; per-agency tenant isolation.</p>
         </article>
       </div>
 
-      <div class="cta-strip">
-        <p style="margin: 0 0 1rem; font-weight: 700; color: var(--red)">Ready for your agency?</p>
-        <a
-          class="btn"
-          href="https://drive.google.com/uc?export=download&amp;id=1hSFYVpRUdOgYf-bfa4hsc-bIovUCynoP"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Download DarshanDesk ZIP</a
-        >
+      <div class="cta-band">
+        <img
+          src="https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=1600&q=80"
+          alt=""
+          loading="lazy"
+        />
+        <div class="veil" aria-hidden="true"></div>
+        <div class="cta-inner">
+          <h2 class="display">Begin with DarshanDesk</h2>
+          <p>Download the ZIP, load in Chrome, and create your agency account in minutes.</p>
+          <a
+            class="btn-primary"
+            href="https://drive.google.com/uc?export=download&amp;id=1hSFYVpRUdOgYf-bfa4hsc-bIovUCynoP"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Download extension</a
+          >
+        </div>
       </div>
+    </section>
 
-      <div class="card compliance">
-        <h2>What DarshanDesk does not do</h2>
-        <ul>
-          <li>Not affiliated with Tirumala Tirupati Devasthanams (TTD).</li>
-          <li>No auto-submit, captcha bypass, OTP, or payment automation.</li>
-          <li>No guarantee of ticket availability—quota is on the official portal.</li>
-        </ul>
+    <section class="section">
+      <div class="cards">
+        <div class="card card-soft" id="install">
+          <h2>Install in Chrome</h2>
+          <ol>
+            <li>Download the ZIP from Google Drive and extract it.</li>
+            <li>Go to <code>chrome://extensions</code> → enable <strong>Developer mode</strong>.</li>
+            <li><strong>Load unpacked</strong> → folder with <code>manifest.json</code> at top level.</li>
+            <li>Pin DarshanDesk → create account or sign in.</li>
+            <li>TTD account → pilgrims → preparation → Pilgrim Details → <strong>Sync &amp; Fill</strong>.</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h2>What we never automate</h2>
+          <ul>
+            <li>Not affiliated with Tirumala Tirupati Devasthanams (TTD).</li>
+            <li>No captcha bypass, OTP, payment, or final booking submit.</li>
+            <li>Ticket availability is always decided on the official portal.</li>
+          </ul>
+        </div>
       </div>
-
-      <div class="card" id="install">
-        <h2>Install in Chrome</h2>
-        <ol>
-          <li>Download the ZIP (Google Drive) and extract to a folder.</li>
-          <li>Open <code>chrome://extensions</code> → <strong>Developer mode</strong> → <strong>Load unpacked</strong>.</li>
-          <li>Select the folder with <code>manifest.json</code> at the top level.</li>
-          <li>Create account or sign in → add TTD account → pilgrims → preparation.</li>
-          <li>On TTD Pilgrim Details → extension <strong>Fill</strong> → <strong>Sync &amp; Fill</strong>.</li>
-        </ol>
-      </div>
-    </main>
+    </section>
 
     <footer>
-      DarshanDesk v1.0.0 — operator-assisted booking preparation.<br />
-      Temple photos: Wikimedia Commons. Video: YouTube embed for inspiration only.<br />
-      <a href="https://github.com/shivanshunigam01/darshan-desk" style="color: var(--red)">GitHub</a>
+      DarshanDesk v1.0.0 — operator-assisted pilgrim preparation.<br />
+      Photos:
+      <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a> contributors (see Unsplash license).<br />
+      <a href="https://github.com/shivanshunigam01/darshan-desk">Source on GitHub</a>
     </footer>
   </body>
 </html>
