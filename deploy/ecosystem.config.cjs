@@ -1,11 +1,15 @@
-/** PM2 process file — copy to EC2 app directory */
+/** PM2 — always start from monorepo root so workspace node_modules resolve */
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+
 module.exports = {
   apps: [
     {
       name: 'darshandesk-api',
-      cwd: './server',
-      script: 'src/index.js',
-      interpreter: 'node',
+      cwd: root,
+      script: 'npm',
+      args: 'run start -w server',
+      interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',
       max_memory_restart: '512M',

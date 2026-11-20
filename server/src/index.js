@@ -1,11 +1,14 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import { createApp } from './app.js';
 import { shouldSeedOnStart, isProduction } from './config/env.js';
 import { captureMonitoringEvent, initErrorMonitoring } from './middleware/errorMonitor.js';
 import { seedDatabase } from './seed.js';
 
-dotenv.config();
+const serverDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+dotenv.config({ path: path.join(serverDir, '.env') });
 
 const PORT = Number(process.env.PORT) || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/darshan-desk';

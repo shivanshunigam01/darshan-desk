@@ -69,7 +69,16 @@ cd ~
 git clone https://github.com/shivanshunigam01/darshan-desk.git
 cd darshan-desk
 
-npm ci
+# One-shot install (fixes "Cannot find package dotenv")
+bash scripts/ec2-bootstrap.sh
+```
+
+Or manually:
+
+```bash
+npm ci || npm install
+npm install -w server --omit=dev
+find node_modules -path '*/dotenv/package.json' | head -1
 
 npm run build -w @darshan-desk/quota
 npm run build -w @darshan-desk/fill-engine
