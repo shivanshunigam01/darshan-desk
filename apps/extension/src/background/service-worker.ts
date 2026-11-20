@@ -77,9 +77,29 @@ async function handleMessage(message: ProtocolMessage): Promise<ProtocolResponse
       return fillTtdLoginOnActiveTab();
     case 'FILL_PAGE_OVERLAY':
       return relayFillPageOverlay(message.show, message.status, message.title);
+    case 'SRIVANI_BOOKING_ASSIST_REQUEST':
+      return srivaniBookingAssistActiveTab(message);
     default:
       return { ok: false, error: 'Unknown message', errorCode: 'UNSUPPORTED' };
   }
+}
+
+async function srivaniBookingAssistActiveTab(message: Extract<ProtocolMessage, { type: 'SRIVANI_BOOKING_ASSIST_REQUEST' }>): Promise<ProtocolResponse> {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) throw new Error('No active tab');
+  let response: Record<string, unknown>;
+  try {
+    response = (await chrome.tabs.sendMessage(tab.id, {
+      type: 'SRIVANI_BOOKING_ASSIST_REQUEST',
+      autoContinue: message.autoContinue,
+      autoPaymentGateway: message.autoPaymentGateway,
+      preferredGateway: message.preferredGateway,
+    })) as Record<string, unknown>;
+  } catch {
+    throw new Error('Open TTD SRIVANI pilgrim or payment page — content script not loaded');
+  }
+  const success = Boolean(response?.success);
+  return { ok: success, fillReport: response, validation: { ok: success } };
 }
 
 async function relayFillPageOverlay(show: boolean, status?: string, title?: string): Promise<ProtocolResponse> {

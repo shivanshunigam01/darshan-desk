@@ -5,6 +5,7 @@ import type { FieldFillResult } from '@darshan-desk/fill-engine';
 import type { ProtocolMessage, ProtocolResponse } from '../../shared/protocol';
 import type { ExtensionSession } from '../../shared/storage';
 import { API_BASE_URL } from '../../config/api';
+import { useAuth } from '../../hooks/useAuth';
 import { loadPendingPairing } from '../../services/authStorage';
 import { FillLoader } from '../../components/fill/FillLoader';
 import { Badge } from '../../components/ui/badge';
@@ -28,6 +29,7 @@ function send<T extends ProtocolMessage>(msg: T): Promise<ProtocolResponse> {
 
 export default function LegacyFillWorkflow() {
   const { t } = useTranslation();
+  const { settings } = useAuth();
   const apiBaseUrl = API_BASE_URL.replace(/\/$/, '');
   const [pairingToken, setPairingToken] = useState('');
   const [session, setSession] = useState<ExtensionSession | null>(null);
@@ -38,7 +40,8 @@ export default function LegacyFillWorkflow() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [busyLabel, setBusyLabel] = useState('');
-  const [fillStep, setFillStep] = useState<1 | 2 | 3 | undefined>();
+  const [fillStep, setFillStep] = useState<1 | 2 | 3 | 4 | undefined>();
+  const [assistNote, setAssistNote] = useState('');
   const [results, setResults] = useState<FieldFillResult[]>([]);
   const [validation, setValidation] = useState<{ ok: boolean; fieldErrors?: Array<{ label: string; message: string }> } | null>(
     null
@@ -208,6 +211,26 @@ export default function LegacyFillWorkflow() {
           : { type: 'FORM_FILL_REQUEST', allowOverwrite, validateOnly: false }
       );
       parseFillReport(r, validateOnly);
+
+      if (!validateOnly && settings.bookingAssist && r.ok) {
+        setFillStep(4);
+        setBusyLabel(t('fill.stepBookingAssist'));
+        await pageOverlay(true, t('fill.stepBookingAssist'));
+        const assistR = await send({
+          type: 'SRIVANI_BOOKING_ASSIST_REQUEST',
+          autoContinue: true,
+          autoPaymentGateway: true,
+          preferredGateway: settings.paymentGateway,
+        });
+        const report = assistR.fillReport as { payNowReady?: boolean; message?: string } | undefined;
+        if (report?.payNowReady) {
+          setAssistNote(t('fill.payNowManual'));
+        } else if (report?.message) {
+          setAssistNote(report.message);
+        } else if (!assistR.ok) {
+          setAssistNote(assistR.error || t('fill.assistFailed'));
+        }
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : validateOnly ? 'Validate failed' : 'Fill failed');
     } finally {
@@ -219,6 +242,33 @@ export default function LegacyFillWorkflow() {
   };
 
   const validateFields = () => syncThenFill(true);
+
+  const runBookingAssistOnly = async () => {
+    setBusy(true);
+    setError('');
+    setAssistNote('');
+    setFillStep(4);
+    setBusyLabel(t('fill.stepBookingAssist'));
+    await pageOverlay(true, t('fill.stepBookingAssist'));
+    try {
+      const assistR = await send({
+        type: 'SRIVANI_BOOKING_ASSIST_REQUEST',
+        autoContinue: true,
+        autoPaymentGateway: true,
+        preferredGateway: settings.paymentGateway,
+      });
+      const report = assistR.fillReport as { payNowReady?: boolean; message?: string } | undefined;
+      if (report?.payNowReady) setAssistNote(t('fill.payNowManual'));
+      else setAssistNote(report?.message || assistR.error || t('fill.assistFailed'));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('fill.assistFailed'));
+    } finally {
+      await pageOverlay(false);
+      setBusy(false);
+      setBusyLabel('');
+      setFillStep(undefined);
+    }
+  };
 
   const connected = Boolean(session?.connected);
 
@@ -334,6 +384,16 @@ export default function LegacyFillWorkflow() {
               {t('fill.syncOnly')}
             </Button>
           </div>
+
+          {settings.bookingAssist && (
+            <Button variant="secondary" size="sm" className="w-full" disabled={busy} onClick={() => void runBookingAssistOnly()}>
+              {t('fill.assistContinue')}
+            </Button>
+          )}
+
+          {assistNote && (
+            <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-950">{assistNote}</p>
+          )}
 
           <label className="flex items-center gap-2 text-[10px] text-stone-600">
             <input type="checkbox" className="accent-temple-red" checked={allowOverwrite} onChange={(e) => setAllowOverwrite(e.target.checked)} />

@@ -119,5 +119,13 @@
   "fill.stepValidate": "Checking fields on page…",
   "fill.stepFill": "Filling fields on TTD…",
   "fill.captchaRequired": "Complete CAPTCHA on the official website.",
-  "fill.overlayHint": "Keep the TTD Pilgrim Details tab active"
+  "fill.overlayHint": "Keep the TTD Pilgrim Details tab active",
+  "fill.stepBookingAssist": "Waiting for Continue · payment gateway…",
+  "fill.assistContinue": "Assist Continue → Payment",
+  "fill.payNowManual": "Gateway selected — review summary and click Pay Now on TTD yourself.",
+  "fill.assistFailed": "Booking assist could not complete on this page.",
+  "settings.bookingAssist": "After fill: auto Continue & gateway",
+  "settings.bookingAssistHint": "Clicks Continue only when TTD enables it (solve CAPTCHA first). Pay Now stays manual.",
+  "settings.paymentGateway": "Preferred payment gateway",
+  "settings.gatewayAny": "Any available gateway"
 }

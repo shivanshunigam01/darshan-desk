@@ -18,7 +18,13 @@ export type ProtocolMessage =
   | { type: 'GET_PORTAL_CREDENTIALS_STATE' }
   | { type: 'TTD_LOGIN_FILL_REQUEST' }
   | { type: 'TTD_LOGIN_FILL_FROM_PAGE' }
-  | { type: 'FILL_PAGE_OVERLAY'; show: boolean; status?: string; title?: string };
+  | { type: 'FILL_PAGE_OVERLAY'; show: boolean; status?: string; title?: string }
+  | {
+      type: 'SRIVANI_BOOKING_ASSIST_REQUEST';
+      autoContinue?: boolean;
+      autoPaymentGateway?: boolean;
+      preferredGateway?: 'ICICI' | 'HDFC' | 'UNION' | 'ANY';
+    };
 
 export type ProtocolResponse = {
   ok: boolean;

@@ -5,6 +5,7 @@ import {
   executeFillPlan,
   fillLiveSrivaniPilgrims,
   isLiveSrivaniPilgrimPage,
+  runSrivaniBookingAssist,
   mapPilgrimRowsById,
   orderPilgrimsBySelection,
   verifyFillResults,
@@ -70,6 +71,14 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     sendResponse({ ok: true, detection: detectForm() });
     return;
   }
+  if (message?.type === 'SRIVANI_BOOKING_ASSIST_REQUEST') {
+    runBookingAssist(message)
+      .then((report) => sendResponse(report))
+      .catch((err: Error) =>
+        sendResponse({ success: false, steps: [], phase: 'unknown', payNowReady: false, message: err.message })
+      );
+    return true;
+  }
   if (message?.type === 'FILL_PAGE_OVERLAY') {
     if (message.show) {
       if (document.getElementById('dd-fill-overlay-root')) {
@@ -85,6 +94,27 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
   return false;
 });
+
+async function runBookingAssist(message: {
+  autoContinue?: boolean;
+  autoPaymentGateway?: boolean;
+  preferredGateway?: 'ICICI' | 'HDFC' | 'UNION' | 'ANY';
+}) {
+  if (!/tirupatibalaji\.ap\.gov\.in/i.test(location.hostname)) {
+    throw new Error('Open the official TTD SRIVANI booking tab first');
+  }
+  showFillOverlay(document, 'Complete CAPTCHA if shown — waiting for Continue…', 'DarshanDesk booking assist');
+  try {
+    return await runSrivaniBookingAssist(document, {
+      autoContinue: message.autoContinue !== false,
+      autoPaymentGateway: message.autoPaymentGateway !== false,
+      preferredGateway: message.preferredGateway || 'ANY',
+      onStatus: (line) => updateFillOverlayStatus(document, line),
+    });
+  } finally {
+    hideFillOverlay(document);
+  }
+}
 
 async function runFill(message: {
   plan?: FillPlanItem[];

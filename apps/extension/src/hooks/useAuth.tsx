@@ -30,6 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     language: 'en',
     apiBaseUrl: 'https://darshan.totallylearns.com',
     defaultTimezone: 'Asia/Kolkata',
+    bookingAssist: true,
+    paymentGateway: 'ANY',
   });
   const [loading, setLoading] = useState(true);
 

@@ -18,16 +18,22 @@ export type OperatorAuth = {
   savedAt: string;
 };
 
+export type PaymentGatewayPreference = 'ICICI' | 'HDFC' | 'UNION' | 'ANY';
+
 export type ExtensionSettings = {
   language: 'en' | 'hi' | 'te';
   apiBaseUrl: string;
   defaultTimezone: string;
+  bookingAssist: boolean;
+  paymentGateway: PaymentGatewayPreference;
 };
 
 const defaultSettings: ExtensionSettings = {
   language: 'en',
   apiBaseUrl: API_BASE_URL,
   defaultTimezone: 'Asia/Kolkata',
+  bookingAssist: true,
+  paymentGateway: 'ANY',
 };
 
 export async function loadAuth(): Promise<OperatorAuth | null> {

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-export function FillLoader({ label, step }: { label: string; step?: 1 | 2 | 3 }) {
+export function FillLoader({ label, step }: { label: string; step?: 1 | 2 | 3 | 4 }) {
   const { t } = useTranslation();
   return (
     <div
@@ -15,7 +15,7 @@ export function FillLoader({ label, step }: { label: string; step?: 1 | 2 | 3 })
         </div>
         {step != null && (
           <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-temple-red">
-            Step {step} of 3
+            Step {step} of 4
           </p>
         )}
         <p className="text-sm font-bold text-temple-black">{label}</p>
