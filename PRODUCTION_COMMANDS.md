@@ -14,23 +14,23 @@ Use **MongoDB Atlas** (free tier is fine). Do **not** open port **4000** on the 
 
 ---
 
-## A) On your Windows PC (before / after deploy)
+## A) Build extension on your Windows PC (not on EC2)
+
+The API runs on EC2; the **Chrome extension is built on your laptop** (Vite + zip).  
+Do **not** use `npm install -w server --omit=dev` only — that breaks Vite if you try to build on the server.
 
 ```powershell
 cd C:\Users\Admin\Desktop\TTD
+npm ci
 
-# Production extension build (bakes API host into manifest host_permissions)
 $env:DD_PRODUCTION_API_ORIGIN="https://api.YOURDOMAIN.com"
 npm run build:production -w @darshan-desk/extension
-
-# Copy ZIP for landing page (optional — upload to EC2 instead)
-Copy-Item apps\extension\release\darshandesk-extension-v1.0.0.zip apps\landing\downloads\
 ```
 
-Upload ZIP to EC2:
+Upload ZIP to EC2 (run **from PowerShell on Windows**, not on EC2):
 
 ```powershell
-scp apps\extension\release\darshandesk-extension-v1.0.0.zip ubuntu@EC2_IP:~/darshandesk-extension-v1.0.0.zip
+scp "C:\Users\Admin\Desktop\TTD\apps\extension\release\darshandesk-extension-v1.0.0.zip" root@YOUR_EC2_IP:/root/darshandesk-extension-v1.0.0.zip
 ```
 
 ---

@@ -9,7 +9,8 @@ server/.env
 coverage/
 *.log
 apps/extension/release/
-apps/landing/downloads/*.zip
+# Landing ships a pinned release ZIP for direct download
+!apps/landing/downloads/darshandesk-extension-v1.0.0.zip
 test-results/
 .cursor/
 docs/handoff-extract/

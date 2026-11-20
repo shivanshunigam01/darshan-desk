@@ -1,5 +1,6 @@
 import { execSync } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -18,11 +19,15 @@ if (!fs.existsSync(dist)) {
 fs.mkdirSync(releaseDir, { recursive: true });
 if (fs.existsSync(zipPath)) fs.unlinkSync(zipPath);
 
-const psDist = dist.replace(/'/g, "''");
-const psZip = zipPath.replace(/'/g, "''");
-execSync(
-  `powershell -NoProfile -Command "Compress-Archive -Path '${psDist}\\*' -DestinationPath '${psZip}' -Force"`,
-  { stdio: 'inherit' }
-);
+if (process.platform === 'win32') {
+  const psDist = dist.replace(/'/g, "''");
+  const psZip = zipPath.replace(/'/g, "''");
+  execSync(
+    `powershell -NoProfile -Command "Compress-Archive -Path '${psDist}\\*' -DestinationPath '${psZip}' -Force"`,
+    { stdio: 'inherit' }
+  );
+} else {
+  execSync(`cd "${dist}" && zip -qr "${zipPath}" .`, { stdio: 'inherit', shell: true });
+}
 
 console.log(`Created ${zipPath}`);

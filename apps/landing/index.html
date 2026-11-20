@@ -3,15 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DarshanDesk — Chrome extension for SRIVANI prep</title>
+    <meta
+      name="description"
+      content="DarshanDesk — Chrome extension for agency SRIVANI booking preparation, TTD pilgrim autofill assist, and team workflows."
+    />
+    <title>DarshanDesk — SRIVANI prep &amp; TTD autofill for agencies</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
         --red: #b80012;
+        --red-dark: #8f000e;
         --black: #1c1917;
-        --muted: #78716c;
+        --muted: #57534e;
+        --soft: #78716c;
         --bg: #fafaf9;
+        --blush: #fff5f5;
       }
       * {
         box-sizing: border-box;
@@ -19,120 +29,274 @@
       body {
         margin: 0;
         font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-        background: linear-gradient(180deg, #fff 0%, var(--bg) 40%);
+        background: var(--bg);
         color: var(--black);
-        line-height: 1.5;
+        line-height: 1.55;
       }
-      .wrap {
-        max-width: 720px;
+      .hero {
+        background: linear-gradient(135deg, #1c1917 0%, #3d0a12 45%, var(--red) 100%);
+        color: #fff;
+        padding: 2.75rem 1.25rem 3rem;
+      }
+      .hero-inner {
+        max-width: 880px;
         margin: 0 auto;
-        padding: 2.5rem 1.25rem 3rem;
       }
       .badge {
         display: inline-block;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: var(--red);
-        background: #fff5f5;
-        border: 1px solid #fecaca;
-        padding: 0.35rem 0.65rem;
+        color: #fecaca;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.35rem 0.75rem;
         border-radius: 999px;
       }
-      h1 {
-        font-size: clamp(1.75rem, 5vw, 2.25rem);
-        margin: 0.75rem 0 0.5rem;
+      .hero h1 {
+        font-size: clamp(2rem, 6vw, 2.75rem);
+        font-weight: 800;
+        margin: 0.85rem 0 0.5rem;
+        letter-spacing: -0.02em;
       }
-      .lead {
-        color: var(--muted);
-        font-size: 1.05rem;
-        margin-bottom: 1.75rem;
+      .hero .lead {
+        max-width: 38rem;
+        font-size: 1.1rem;
+        color: #e7e5e4;
+        margin: 0 0 1.5rem;
+      }
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 0.9rem 1.5rem;
+        background: #fff;
+        color: var(--red) !important;
+        text-decoration: none;
+        font-weight: 800;
+        border-radius: 12px;
+        box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+        font-size: 0.95rem;
+      }
+      .btn:hover {
+        filter: brightness(0.98);
+        transform: translateY(-1px);
+      }
+      .btn-outline {
+        background: transparent;
+        color: #fff !important;
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        box-shadow: none;
+      }
+      .meta {
+        font-size: 0.8rem;
+        color: #d6d3d1;
+        margin-top: 1rem;
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 2rem 1.25rem 3.5rem;
+      }
+      .section-title {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--red);
+        margin: 0 0 1rem;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .feat {
+        background: #fff;
+        border: 1px solid #e7e5e4;
+        border-radius: 16px;
+        padding: 1.15rem 1.25rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+      }
+      .feat h3 {
+        margin: 0 0 0.4rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+      }
+      .feat p {
+        margin: 0;
+        font-size: 0.88rem;
+        color: var(--soft);
+      }
+      .feat .icon {
+        font-size: 1.35rem;
+        margin-bottom: 0.35rem;
       }
       .card {
         background: #fff;
         border: 1px solid #e7e5e4;
         border-radius: 16px;
-        padding: 1.25rem 1.5rem;
+        padding: 1.35rem 1.5rem;
         margin-bottom: 1rem;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
       }
       .card h2 {
         margin: 0 0 0.75rem;
-        font-size: 1rem;
+        font-size: 1.05rem;
         color: var(--red);
       }
-      ol {
+      .card ol {
         margin: 0;
         padding-left: 1.2rem;
         color: var(--muted);
-        font-size: 0.95rem;
+        font-size: 0.92rem;
       }
-      ol li {
-        margin-bottom: 0.5rem;
+      .card li {
+        margin-bottom: 0.45rem;
       }
-      .btn {
-        display: inline-block;
-        margin-top: 0.5rem;
-        padding: 0.85rem 1.35rem;
-        background: var(--red);
-        color: #fff !important;
-        text-decoration: none;
-        font-weight: 700;
-        border-radius: 10px;
-        box-shadow: 0 6px 20px rgba(184, 0, 18, 0.25);
+      .compliance {
+        background: var(--blush);
+        border-color: #fecaca;
       }
-      .btn:hover {
-        filter: brightness(1.05);
-      }
-      .note {
-        font-size: 0.8rem;
+      .compliance ul {
+        margin: 0;
+        padding-left: 1.2rem;
+        font-size: 0.88rem;
         color: var(--muted);
-        margin-top: 1.5rem;
-        border-top: 1px solid #e7e5e4;
-        padding-top: 1rem;
       }
       code {
         font-size: 0.85em;
         background: #f5f5f4;
-        padding: 0.15em 0.4em;
+        padding: 0.12em 0.4em;
         border-radius: 4px;
+      }
+      footer {
+        text-align: center;
+        font-size: 0.78rem;
+        color: var(--soft);
+        padding: 0 1rem 2rem;
       }
     </style>
   </head>
   <body>
-    <main class="wrap">
-      <span class="badge">Chrome extension</span>
-      <h1>DarshanDesk</h1>
-      <p class="lead">
-        Prepare pilgrims in the extension, sync with your agency API, and assist filling official TTD pilgrim
-        fields. You still submit, declare, and pay yourself on the portal.
-      </p>
-
-      <div class="card">
-        <h2>Download</h2>
-        <p style="margin: 0 0 0.5rem; color: var(--muted); font-size: 0.95rem">
-          Private beta ZIP (unpacked install). Replace the API URL in Settings after install if needed.
+    <header class="hero">
+      <div class="hero-inner">
+        <span class="badge">Chrome extension + agency API</span>
+        <h1>DarshanDesk</h1>
+        <p class="lead">
+          Prepare SRIVANI / pilgrim groups in one place, validate against policy, and assist filling official TTD fields.
+          Your team stays in control—captcha, declarations, OTP, and payment remain on the portal.
         </p>
-        <a class="btn" href="downloads/darshandesk-extension-v1.0.0.zip">Download extension v1.0.0</a>
+        <div class="hero-actions">
+          <a class="btn" href="downloads/darshandesk-extension-v1.0.0.zip">Download v1.0.0 (ZIP)</a>
+          <a class="btn btn-outline" href="#install">Install guide</a>
+        </div>
+        <p class="meta">Production API: <code style="background: rgba(0,0,0,0.25); color: #fde68a">https://darshan.totallylearns.com</code></p>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <h2 class="section-title">Everything in the extension</h2>
+      <div class="features">
+        <article class="feat">
+          <div class="icon">🏠</div>
+          <h3>Agency dashboard</h3>
+          <p>Home stats: team users, pilgrims, TTD accounts, preparations, validation count, and account age.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">👤</div>
+          <h3>Sign up &amp; sign in</h3>
+          <p>Create your agency with name, email, and password. JWT session—no separate dashboard required.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">🔐</div>
+          <h3>TTD accounts</h3>
+          <p>Save labelled TTD logins, authorize for booking, optional device-only password for login assist.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">🙏</div>
+          <h3>Pilgrim catalog</h3>
+          <p>Add, search, and manage pilgrims (name, age, ID) synced to your agency backend.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">📋</div>
+          <h3>Booking preparation</h3>
+          <p>Pick account &amp; pilgrims, validate donation vs group size, consent, and connect extension for fill.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">✨</div>
+          <h3>Sync &amp; Fill</h3>
+          <p>Auto sync from server → apply pilgrim selection → fill live TTD Pilgrim Details with step loader.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">🔍</div>
+          <h3>Validate on page</h3>
+          <p>Check visible fields without overwriting—review field results before you submit manually.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">⌛</div>
+          <h3>Live local time</h3>
+          <p>Header clock for operators—compare with TTD server time when booking opens.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">🌐</div>
+          <h3>Languages</h3>
+          <p>English, हिंदी, and తెలుగు in Settings.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">🔑</div>
+          <h3>TTD login assist</h3>
+          <p>Fills saved login ID and password on the official login page—you enter captcha and press Login.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">🛡️</div>
+          <h3>Security</h3>
+          <p>TTD passwords stay on device; DarshanDesk uses API tokens. Tenant-isolated agency data on MongoDB.</p>
+        </article>
+        <article class="feat">
+          <div class="icon">🎯</div>
+          <h3>SRIVANI live mapping</h3>
+          <p>Tuned for live TTD pilgrim flows plus local mock page for safe testing.</p>
+        </article>
       </div>
 
-      <div class="card">
-        <h2>Install (Chrome)</h2>
+      <div class="card compliance">
+        <h2>What DarshanDesk does not do</h2>
+        <ul>
+          <li>Not affiliated with Tirumala Tirupati Devasthanams (TTD).</li>
+          <li>No auto-submit, no captcha bypass, no OTP or payment automation.</li>
+          <li>No guarantee of ticket availability—quota is decided on the official portal.</li>
+        </ul>
+      </div>
+
+      <div class="card" id="install">
+        <h2>Install in Chrome</h2>
         <ol>
-          <li>Unzip the download.</li>
-          <li>Open <code>chrome://extensions</code> → Developer mode → <strong>Load unpacked</strong>.</li>
-          <li>Select the <strong>unzipped folder</strong> (it contains <code>manifest.json</code> at the top level).</li>
-          <li>Pin DarshanDesk → <strong>Create account</strong> or sign in.</li>
-          <li>Set API URL to your production host (e.g. <code>https://api.yourdomain.com</code>).</li>
+          <li>Download the ZIP above and extract to a folder (e.g. <code>DarshanDesk-ext</code>).</li>
+          <li>Open <code>chrome://extensions</code> → turn on <strong>Developer mode</strong>.</li>
+          <li><strong>Load unpacked</strong> → select the folder that contains <code>manifest.json</code> at the top level.</li>
+          <li>Pin DarshanDesk → <strong>Create account</strong> or sign in with your agency email.</li>
+          <li>In <strong>Settings</strong>, set API URL to <code>https://darshan.totallylearns.com</code> (no trailing slash) if not already configured.</li>
+          <li>Add TTD account → pilgrims → preparation → open TTD Pilgrim Details → <strong>Fill</strong> → <strong>Sync &amp; Fill</strong>.</li>
         </ol>
       </div>
 
-      <p class="note">
-        Not affiliated with TTD. No captcha, OTP, payment, or final booking submission automation.
-        For Chrome Web Store listing, build with production API env vars — see
-        <code>EXTENSION_PUBLISHING.md</code> in the repo.
-      </p>
+      <div class="card">
+        <h2>For agencies</h2>
+        <p style="margin: 0; color: var(--soft); font-size: 0.92rem">
+          One extension per operator machine. Central API on your domain keeps pilgrim prep and audit trails under your
+          agency license. Need Chrome Web Store distribution? Rebuild the ZIP with production env vars from the
+          <a href="https://github.com/shivanshunigam01/darshan-desk" style="color: var(--red)">GitHub repo</a>.
+        </p>
+      </div>
     </main>
+
+    <footer>
+      DarshanDesk v1.0.0 — operator-assisted TTD booking preparation. © your agency deployment.
+    </footer>
   </body>
 </html>
