@@ -378,6 +378,35 @@
       footer a {
         color: var(--red);
       }
+      .sanctum {
+        max-width: 1000px;
+        margin: -3rem auto 0;
+        padding: 0 1.25rem;
+        position: relative;
+        z-index: 5;
+      }
+      .sanctum-inner {
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 28px 70px rgba(28, 25, 23, 0.35);
+        border: 2px solid rgba(234, 179, 8, 0.55);
+        background: #1c1917;
+      }
+      .sanctum-inner img {
+        width: 100%;
+        display: block;
+        max-height: 520px;
+        object-fit: cover;
+        object-position: center 30%;
+      }
+      .sanctum-cap {
+        padding: 0.85rem 1.25rem;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #fde68a;
+        background: linear-gradient(90deg, #3d0a12, #1c1917);
+        text-align: center;
+      }
     </style>
   </head>
   <body>
@@ -414,6 +443,17 @@
       <p class="scroll-hint">Scroll</p>
     </header>
 
+    <div class="sanctum">
+      <figure class="sanctum-inner">
+        <img
+          src="assets/venkateswara-sanctum.jpg"
+          alt="Lord Venkateswara in the temple sanctum — illustrative darshan"
+          loading="eager"
+        />
+        <figcaption class="sanctum-cap">Sri Venkateswara — may your pilgrim work be devoted and lawful</figcaption>
+      </figure>
+    </div>
+
     <section class="section">
       <div class="section-head">
         <h2 class="display">Spirit of the journey</h2>
@@ -436,14 +476,14 @@
           />
           <span>Night darshan lights</span>
         </figure>
-        <figure class="bento-item span-4">
+        <figure class="bento-item span-4 row-tall">
           <img
-            src="assets/hero-tirumala-night.jpg"
-            alt="Illuminated temple complex"
+            src="assets/venkateswara-sanctum.jpg"
+            alt="Temple sanctum darshan"
             loading="lazy"
-            style="object-position: center 35%"
+            style="object-position: center top"
           />
-          <span>Divine glow</span>
+          <span>Sanctum darshan</span>
         </figure>
         <figure class="bento-item span-8">
           <img
