@@ -1,7 +1,9 @@
 import { defineManifest } from '@crxjs/vite-plugin';
 import packageJson from './package.json';
 
-const prodApi = process.env.DD_PRODUCTION_API_ORIGIN?.replace(/\/$/, '');
+const prodApi = (
+  process.env.DD_PRODUCTION_API_ORIGIN || 'https://darshan.totallylearns.com'
+).replace(/\/$/, '');
 const prodDashboard = process.env.DD_PRODUCTION_DASHBOARD_ORIGIN?.replace(/\/$/, '');
 const prodMockBooking = prodApi ? `${prodApi}/mock-booking` : '';
 

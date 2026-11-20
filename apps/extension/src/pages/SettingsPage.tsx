@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Input } from '../components/ui/input';
 import { useAuth } from '../hooks/useAuth';
 import { setAppLanguage } from '../i18n';
 
@@ -31,14 +30,6 @@ export function SettingsPage() {
             <option value="hi">हिंदी</option>
             <option value="te">తెలుగు</option>
           </select>
-        </label>
-        <label className="block text-xs font-medium">
-          {t('settings.api')}
-          <Input
-            className="mt-1"
-            value={settings.apiBaseUrl}
-            onChange={(e) => updateSettings({ apiBaseUrl: e.target.value })}
-          />
         </label>
         <p className="text-[10px] text-stone-500">Language: {i18n.language}</p>
         <Button variant="destructive" className="w-full" onClick={() => signOut()}>

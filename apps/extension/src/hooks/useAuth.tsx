@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { resolveApiBaseUrl } from '../config/api';
 import {
   clearAuth,
   loadAuth,
@@ -25,7 +26,11 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState<OperatorAuth | null>(null);
-  const [settings, setSettings] = useState<ExtensionSettings>({ language: 'en', apiBaseUrl: 'http://localhost:4000', defaultTimezone: 'Asia/Kolkata' });
+  const [settings, setSettings] = useState<ExtensionSettings>({
+    language: 'en',
+    apiBaseUrl: 'https://darshan.totallylearns.com',
+    defaultTimezone: 'Asia/Kolkata',
+  });
   const [loading, setLoading] = useState(true);
 
   const hydrate = useCallback(async () => {
@@ -64,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(
     async (email: string, password: string) => {
-      const base = settings.apiBaseUrl;
+      const base = resolveApiBaseUrl();
       const { token, operator } = await apiLogin(base, email, password);
       const me = await fetchMe({ apiBaseUrl: base, token, operator, savedAt: new Date().toISOString() });
       const record: OperatorAuth = {
@@ -77,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await saveAuth(record);
       setAuth(record);
     },
-    [settings.apiBaseUrl]
+    []
   );
 
   const signOut = useCallback(async () => {

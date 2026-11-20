@@ -1,3 +1,5 @@
+import { API_BASE_URL, resolveApiBaseUrl } from '../config/api';
+
 const AUTH_KEY = 'dd_operator_auth_v1';
 const SETTINGS_KEY = 'dd_extension_settings_v1';
 const PENDING_PAIR_KEY = 'dd_pending_pair_v1';
@@ -24,7 +26,7 @@ export type ExtensionSettings = {
 
 const defaultSettings: ExtensionSettings = {
   language: 'en',
-  apiBaseUrl: 'http://localhost:4000',
+  apiBaseUrl: API_BASE_URL,
   defaultTimezone: 'Asia/Kolkata',
 };
 
@@ -43,12 +45,17 @@ export async function clearAuth() {
 
 export async function loadSettings(): Promise<ExtensionSettings> {
   const data = await chrome.storage.local.get(SETTINGS_KEY);
-  return { ...defaultSettings, ...(data[SETTINGS_KEY] as Partial<ExtensionSettings> | undefined) };
+  const merged = { ...defaultSettings, ...(data[SETTINGS_KEY] as Partial<ExtensionSettings> | undefined) };
+  merged.apiBaseUrl = resolveApiBaseUrl(merged.apiBaseUrl);
+  return merged;
 }
 
 export async function saveSettings(patch: Partial<ExtensionSettings>) {
   const current = await loadSettings();
-  await chrome.storage.local.set({ [SETTINGS_KEY]: { ...current, ...patch } });
+  const { apiBaseUrl: _omit, ...safePatch } = patch;
+  await chrome.storage.local.set({
+    [SETTINGS_KEY]: { ...current, ...safePatch, apiBaseUrl: resolveApiBaseUrl() },
+  });
 }
 
 export async function savePendingPairing(pairingToken: string) {

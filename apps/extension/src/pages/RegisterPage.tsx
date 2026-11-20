@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Input } from '../components/ui/input';
 import { useAuth } from '../hooks/useAuth';
 import { ApiError, register, type RegisterPayload } from '../services/darshanDeskApi';
+import { resolveApiBaseUrl } from '../config/api';
 import type { OperatorAuth } from '../services/authStorage';
 
 export function RegisterPage() {
@@ -32,7 +33,7 @@ export function RegisterPage() {
         consentAcknowledged: true,
       };
 
-      const base = settings.apiBaseUrl;
+      const base = resolveApiBaseUrl();
       const result = await register(base, body);
 
       const auth: OperatorAuth = {

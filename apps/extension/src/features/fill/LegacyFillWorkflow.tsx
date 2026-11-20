@@ -4,7 +4,8 @@ import { ExternalLink, LogIn, Zap } from 'lucide-react';
 import type { FieldFillResult } from '@darshan-desk/fill-engine';
 import type { ProtocolMessage, ProtocolResponse } from '../../shared/protocol';
 import type { ExtensionSession } from '../../shared/storage';
-import { loadPendingPairing, loadSettings } from '../../services/authStorage';
+import { API_BASE_URL } from '../../config/api';
+import { loadPendingPairing } from '../../services/authStorage';
 import { FillLoader } from '../../components/fill/FillLoader';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
@@ -27,7 +28,7 @@ function send<T extends ProtocolMessage>(msg: T): Promise<ProtocolResponse> {
 
 export default function LegacyFillWorkflow() {
   const { t } = useTranslation();
-  const [apiBaseUrl, setApiBaseUrl] = useState('http://localhost:4000');
+  const apiBaseUrl = API_BASE_URL.replace(/\/$/, '');
   const [pairingToken, setPairingToken] = useState('');
   const [session, setSession] = useState<ExtensionSession | null>(null);
   const [payload, setPayload] = useState<Payload | null>(null);
@@ -61,12 +62,9 @@ export default function LegacyFillWorkflow() {
   useEffect(() => {
     refreshState();
     send({ type: 'GET_PORTAL_CREDENTIALS_STATE' }).then((r) => setHasPortalLogin(Boolean(r.hasCredentials)));
-    loadSettings().then((s) => setApiBaseUrl(s.apiBaseUrl.replace(/\/$/, '')));
     void loadPendingPairing().then(async (token) => {
       if (!token) return;
-      const settings = await loadSettings();
-      const base = settings.apiBaseUrl.replace(/\/$/, '');
-      const r = await send({ type: 'EXTENSION_PAIR_REQUEST', pairingToken: token, apiBaseUrl: base });
+      const r = await send({ type: 'EXTENSION_PAIR_REQUEST', pairingToken: token, apiBaseUrl });
       if (r.ok) void refreshState();
     });
   }, [refreshState]);
@@ -265,7 +263,6 @@ export default function LegacyFillWorkflow() {
       {!connected ? (
         <Card>
           <CardContent className="space-y-2 pt-4 text-xs">
-            <Input value={apiBaseUrl} onChange={(e) => setApiBaseUrl(e.target.value)} placeholder="API URL" />
             <Input
               value={pairingToken}
               onChange={(e) => setPairingToken(e.target.value)}
