@@ -19,8 +19,8 @@ const STYLES = `
     max-width: min(92vw, 320px);
     padding: 18px 22px;
     border-radius: 12px;
-    background: #fffbeb;
-    border: 1px solid #fed7aa;
+    background: linear-gradient(145deg, #ffffff 0%, #fff5f5 100%);
+    border: 1px solid #fecaca;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
     text-align: center;
     color: #1c1917;
@@ -30,7 +30,7 @@ const STYLES = `
     height: 32px;
     margin: 0 auto 12px;
     border: 3px solid #e7e5e4;
-    border-top-color: #b45309;
+    border-top-color: #B80012;
     border-radius: 50%;
     animation: dd-fill-spin 0.75s linear infinite;
   }

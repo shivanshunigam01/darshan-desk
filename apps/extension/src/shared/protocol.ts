@@ -17,7 +17,8 @@ export type ProtocolMessage =
   | { type: 'PORTAL_CREDENTIALS_SYNC'; credentials: { loginId: string; password: string; label?: string; savedAt?: string } }
   | { type: 'GET_PORTAL_CREDENTIALS_STATE' }
   | { type: 'TTD_LOGIN_FILL_REQUEST' }
-  | { type: 'TTD_LOGIN_FILL_FROM_PAGE' };
+  | { type: 'TTD_LOGIN_FILL_FROM_PAGE' }
+  | { type: 'FILL_PAGE_OVERLAY'; show: boolean; status?: string; title?: string };
 
 export type ProtocolResponse = {
   ok: boolean;

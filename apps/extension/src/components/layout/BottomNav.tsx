@@ -16,7 +16,7 @@ export function BottomNav() {
   const { t } = useTranslation();
   return (
     <nav
-      className="grid grid-cols-3 gap-1 border-t border-stone-200 bg-white px-2 py-2"
+      className="grid grid-cols-3 gap-1 border-t border-red-100 bg-white/95 px-2 py-2 shadow-[0_-4px_16px_rgba(184,0,18,0.06)]"
       aria-label="Primary"
     >
       {items.map(({ to, key, icon: Icon }) => (
@@ -26,7 +26,7 @@ export function BottomNav() {
           className={({ isActive }) =>
             cn(
               'flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium text-stone-600 transition-colors',
-              isActive && 'bg-stone-100 text-temple-red'
+              isActive && 'bg-temple-blush font-bold text-temple-red shadow-inner'
             )
           }
         >

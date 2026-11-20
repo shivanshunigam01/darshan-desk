@@ -17,6 +17,7 @@ type AuthContextValue = {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
+  establishAuth: (record: OperatorAuth) => Promise<void>;
   updateSettings: (patch: Partial<ExtensionSettings>) => Promise<void>;
 };
 
@@ -92,6 +93,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuth(next);
   }, [auth]);
 
+  const establishAuth = useCallback(async (record: OperatorAuth) => {
+    await saveAuth(record);
+    try {
+      const me = await fetchMe(record);
+      const next = { ...record, operator: me.operator, license: me.license, savedAt: new Date().toISOString() };
+      await saveAuth(next);
+      setAuth(next);
+    } catch {
+      setAuth(record);
+    }
+  }, []);
+
   const updateSettings = useCallback(async (patch: Partial<ExtensionSettings>) => {
     await saveSettings(patch);
     const next = await loadSettings();
@@ -99,8 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ auth, settings, loading, signIn, signOut, refreshSession, updateSettings }),
-    [auth, settings, loading, signIn, signOut, refreshSession, updateSettings]
+    () => ({ auth, settings, loading, signIn, signOut, refreshSession, establishAuth, updateSettings }),
+    [auth, settings, loading, signIn, signOut, refreshSession, establishAuth, updateSettings]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

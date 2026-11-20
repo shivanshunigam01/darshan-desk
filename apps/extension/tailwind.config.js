@@ -7,6 +7,8 @@ export default {
       colors: {
         temple: {
           red: '#B80012',
+          crimson: '#9a0010',
+          blush: '#fff0f0',
           black: '#101010',
           surface: '#181818',
           muted: '#F5F5F5',

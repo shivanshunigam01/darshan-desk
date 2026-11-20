@@ -75,9 +75,22 @@ async function handleMessage(message: ProtocolMessage): Promise<ProtocolResponse
     case 'TTD_LOGIN_FILL_REQUEST':
     case 'TTD_LOGIN_FILL_FROM_PAGE':
       return fillTtdLoginOnActiveTab();
+    case 'FILL_PAGE_OVERLAY':
+      return relayFillPageOverlay(message.show, message.status, message.title);
     default:
       return { ok: false, error: 'Unknown message', errorCode: 'UNSUPPORTED' };
   }
+}
+
+async function relayFillPageOverlay(show: boolean, status?: string, title?: string): Promise<ProtocolResponse> {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return { ok: true };
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: 'FILL_PAGE_OVERLAY', show, status, title });
+  } catch {
+    /* tab may not be a supported TTD page */
+  }
+  return { ok: true };
 }
 
 async function fillTtdLoginOnActiveTab(): Promise<ProtocolResponse> {

@@ -1,7 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ExternalLink, LogIn, Zap } from 'lucide-react';
 import type { FieldFillResult } from '@darshan-desk/fill-engine';
 import type { ProtocolMessage, ProtocolResponse } from '../../shared/protocol';
 import type { ExtensionSession } from '../../shared/storage';
+import { loadPendingPairing, loadSettings } from '../../services/authStorage';
+import { FillLoader } from '../../components/fill/FillLoader';
+import { Badge } from '../../components/ui/badge';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
 
 type Payload = {
   preparationId: string;
@@ -17,7 +25,8 @@ function send<T extends ProtocolMessage>(msg: T): Promise<ProtocolResponse> {
   return chrome.runtime.sendMessage(msg);
 }
 
-export default function App() {
+export default function LegacyFillWorkflow() {
+  const { t } = useTranslation();
   const [apiBaseUrl, setApiBaseUrl] = useState('http://localhost:4000');
   const [pairingToken, setPairingToken] = useState('');
   const [session, setSession] = useState<ExtensionSession | null>(null);
@@ -28,6 +37,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [busyLabel, setBusyLabel] = useState('');
+  const [fillStep, setFillStep] = useState<1 | 2 | 3 | undefined>();
   const [results, setResults] = useState<FieldFillResult[]>([]);
   const [validation, setValidation] = useState<{ ok: boolean; fieldErrors?: Array<{ label: string; message: string }> } | null>(
     null
@@ -35,6 +45,7 @@ export default function App() {
   const [auditErrors, setAuditErrors] = useState<string[]>([]);
   const [hasPortalLogin, setHasPortalLogin] = useState(false);
   const [loginFillNote, setLoginFillNote] = useState('');
+  const validateOnlyRef = useRef(false);
 
   const refreshState = useCallback(async () => {
     const r = await send({ type: 'GET_STATE' });
@@ -50,6 +61,14 @@ export default function App() {
   useEffect(() => {
     refreshState();
     send({ type: 'GET_PORTAL_CREDENTIALS_STATE' }).then((r) => setHasPortalLogin(Boolean(r.hasCredentials)));
+    loadSettings().then((s) => setApiBaseUrl(s.apiBaseUrl.replace(/\/$/, '')));
+    void loadPendingPairing().then(async (token) => {
+      if (!token) return;
+      const settings = await loadSettings();
+      const base = settings.apiBaseUrl.replace(/\/$/, '');
+      const r = await send({ type: 'EXTENSION_PAIR_REQUEST', pairingToken: token, apiBaseUrl: base });
+      if (r.ok) void refreshState();
+    });
   }, [refreshState]);
 
   const fillTtdLogin = async () => {
@@ -110,19 +129,12 @@ export default function App() {
   };
 
   const applyPilgrims = async () => {
-    setBusy(true);
-    setBusyLabel('Updating pilgrim selection…');
-    try {
-      const r = await send({ type: 'PREPARATION_SELECTED', pilgrimIds: selected });
-      if (!r.ok) throw new Error(r.error || 'Update failed');
-      setPayload(r.payload as Payload);
-      setAuditErrors((r.validation as { errors?: string[] })?.errors || []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Update failed');
-    } finally {
-      setBusy(false);
-      setBusyLabel('');
-    }
+    const r = await send({ type: 'PREPARATION_SELECTED', pilgrimIds: selected });
+    if (!r.ok) throw new Error(r.error || 'Update failed');
+    setPayload(r.payload as Payload);
+    const errs = (r.validation as { errors?: string[] })?.errors || [];
+    setAuditErrors(errs);
+    return errs;
   };
 
   const disconnect = async () => {
@@ -137,146 +149,151 @@ export default function App() {
     setBusyLabel('');
   };
 
-  const runFillMode = async (validateOnly: boolean) => {
+  const parseFillReport = (r: ProtocolResponse, validateOnly: boolean) => {
+    if (!r.ok) throw new Error(r.error || (validateOnly ? 'Validate failed' : 'Fill failed'));
+    const report = r.fillReport as {
+      results: FieldFillResult[];
+      validation?: { ok: boolean; fieldErrors: Array<{ label: string; message: string }> };
+      captchaRequired?: boolean;
+    };
+    setResults(report.results || []);
+    setValidation(report.validation || (r.validation as typeof validation));
+    if (report.captchaRequired) {
+      setError(t('fill.captchaRequired'));
+    }
+  };
+
+  const pageOverlay = async (show: boolean, status?: string) => {
+    await send({
+      type: 'FILL_PAGE_OVERLAY',
+      show,
+      status,
+      title: validateOnlyRef.current ? t('fill.stepValidate') : t('fill.stepFill'),
+    }).catch(() => undefined);
+  };
+
+  const syncThenFill = async (validateOnly: boolean) => {
+    validateOnlyRef.current = validateOnly;
     setBusy(true);
-    setBusyLabel(validateOnly ? 'Validating fields on page…' : 'Applying fields on TTD page…');
     setError('');
     setResults([]);
     setValidation(null);
     setReviewed(false);
+    setFillStep(1);
+    setBusyLabel(t('fill.stepSync'));
+    await pageOverlay(true, t('fill.stepSync'));
     try {
-      if (!validateOnly) await applyPilgrims();
+      const syncR = await send({ type: 'PREPARATION_SYNC' });
+      if (!syncR.ok) throw new Error(syncR.error || 'Sync failed');
+      setSession(syncR.session as ExtensionSession);
+      const p = syncR.payload as Payload;
+      setPayload(p);
+      const syncAudit =
+        (syncR.validation as { errors?: string[] })?.errors || p.fieldAudit?.errors || [];
+      setAuditErrors(syncAudit);
+
+      setFillStep(2);
+      setBusyLabel(t('fill.stepPilgrims'));
+      await pageOverlay(true, t('fill.stepPilgrims'));
+      const auditAfterSelect = await applyPilgrims();
+      const blockers = auditAfterSelect.length ? auditAfterSelect : syncAudit;
+      if (blockers.length && !validateOnly) {
+        throw new Error(blockers.join(' · '));
+      }
+
+      setFillStep(3);
+      setBusyLabel(validateOnly ? t('fill.stepValidate') : t('fill.stepFill'));
+      await pageOverlay(true, validateOnly ? t('fill.stepValidate') : t('fill.stepFill'));
       const r = await send(
         validateOnly
           ? { type: 'FORM_VALIDATE_REQUEST' }
           : { type: 'FORM_FILL_REQUEST', allowOverwrite, validateOnly: false }
       );
-      if (!r.ok) throw new Error(r.error || (validateOnly ? 'Validate failed' : 'Fill failed'));
-      const report = r.fillReport as {
-        results: FieldFillResult[];
-        validation?: { ok: boolean; fieldErrors: Array<{ label: string; message: string }> };
-        captchaRequired?: boolean;
-      };
-      setResults(report.results || []);
-      setValidation(report.validation || (r.validation as typeof validation));
-      if (report.captchaRequired) {
-        setError('CAPTCHA verification required — complete on the official website.');
-      }
+      parseFillReport(r, validateOnly);
     } catch (e) {
       setError(e instanceof Error ? e.message : validateOnly ? 'Validate failed' : 'Fill failed');
     } finally {
+      await pageOverlay(false);
       setBusy(false);
       setBusyLabel('');
+      setFillStep(undefined);
     }
   };
 
-  const fill = () => runFillMode(false);
-  const validateFields = () => runFillMode(true);
+  const validateFields = () => syncThenFill(true);
 
   const connected = Boolean(session?.connected);
 
   return (
-    <div className="wrap">
-      <h1>DARSHANDESK AUTOFILL</h1>
-      <p className="muted">Status: {connected ? 'Connected' : 'Disconnected'}</p>
-
-      <div className="warn">
-        Final submission, declarations, OTP, and payment stay under your control on the official portal.
-      </div>
-
-      <div className="card" style={{ marginBottom: 12 }}>
-        <div className="row">
-          <strong>TTD login page</strong>
-          <span className={hasPortalLogin ? 'pill ok' : 'pill'}>{hasPortalLogin ? 'Credentials saved' : 'Not synced'}</span>
-        </div>
-        <p className="muted" style={{ margin: '8px 0' }}>
-          On tirupatibalaji login, fills id and password only — you enter captcha and press Login.
-        </p>
-        <div className="actions">
-          <button disabled={busy || !hasPortalLogin} onClick={fillTtdLogin}>
-            Use saved TTD login
-          </button>
-          <button
-            className="secondary"
-            disabled={busy}
-            onClick={() => send({ type: 'OPEN_OFFICIAL_PORTAL' })}
-          >
-            Open TTD login
-          </button>
-        </div>
-        {loginFillNote && <p className="pill ok">{loginFillNote}</p>}
-        {!hasPortalLogin && (
-          <p className="muted">Save login in DarshanDesk → TTD Login, then refresh this popup.</p>
+    <div className="relative space-y-3">
+      <div className="flex flex-wrap gap-1.5">
+        <Badge variant={connected ? 'success' : 'warn'}>{connected ? t('fill.connected') : t('fill.disconnected')}</Badge>
+        {connected && (
+          <Badge variant={session?.validationStatus === 'passed' ? 'success' : 'default'}>
+            {session?.validationStatus || payload?.validationStatus || 'pending'}
+          </Badge>
         )}
       </div>
 
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-xs text-temple-red">
+            <LogIn className="h-4 w-4" />
+            {t('fill.ttdLogin')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1" disabled={busy || !hasPortalLogin} onClick={() => void fillTtdLogin()}>
+              {t('fill.useLogin')}
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              className="flex-1"
+              disabled={busy}
+              onClick={() => send({ type: 'OPEN_OFFICIAL_PORTAL' })}
+            >
+              <ExternalLink className="mr-1 inline h-3 w-3" />
+              {t('fill.openPortal')}
+            </Button>
+          </div>
+          {loginFillNote && <p className="text-[10px] text-emerald-700">{loginFillNote}</p>}
+        </CardContent>
+      </Card>
+
       {!connected ? (
-        <>
-          <div className="row">
-            <label>Connect to DarshanDesk (API URL)</label>
-            <input value={apiBaseUrl} onChange={(e) => setApiBaseUrl(e.target.value)} />
-          </div>
-          <div className="row">
-            <label>Pairing token</label>
-            <input value={pairingToken} onChange={(e) => setPairingToken(e.target.value)} placeholder="From validated preparation" />
-          </div>
-          <button disabled={busy || !pairingToken} onClick={connect}>
-            Connect to DarshanDesk
-          </button>
-        </>
+        <Card>
+          <CardContent className="space-y-2 pt-4 text-xs">
+            <Input value={apiBaseUrl} onChange={(e) => setApiBaseUrl(e.target.value)} placeholder="API URL" />
+            <Input
+              value={pairingToken}
+              onChange={(e) => setPairingToken(e.target.value)}
+              placeholder={t('fill.pairingPlaceholder')}
+            />
+            <Button className="w-full" disabled={busy || !pairingToken} onClick={() => void connect()}>
+              {t('fill.connect')}
+            </Button>
+            <p className="text-[10px] text-stone-500">{t('fill.pairHint')}</p>
+          </CardContent>
+        </Card>
       ) : (
         <>
-          <p>
-            <span className="pill ok">Connected</span>
-            <span className="pill">{session?.validationStatus || payload?.validationStatus || 'pending'}</span>
-            {(session?.workflowStatus || payload?.workflowStatus) && (
-              <span className="pill">{session?.workflowStatus || payload?.workflowStatus}</span>
-            )}
-          </p>
-          <div className="card">
-            <div className="row">
-              <strong>Agency</strong>
-              <span>{session?.agencyName || '—'}</span>
-            </div>
-            <div className="row">
-              <strong>Operator</strong>
-              <span>{session?.operatorName || '—'}</span>
-            </div>
-            <div className="row">
-              <strong>TTD account</strong>
-              <span>{session?.ttdAccountLabel || '—'}</span>
-            </div>
-            <div className="row">
-              <strong>Booking category</strong>
-              <span>{session?.bookingCategory || payload?.permittedScalars.bookingCategory}</span>
-            </div>
-            <div className="row">
-              <strong>Donation</strong>
-              <span>₹{session?.donationAmount ?? payload?.permittedScalars.donationAmount ?? '—'}</span>
-            </div>
-            <div className="row">
-              <strong>Pilgrims selected</strong>
-              <span>
-                {selected.length} / {payload?.pilgrims.length || session?.pilgrimCount || 0}
-              </span>
-            </div>
-            <div className="row">
-              <strong>Preparation status</strong>
-              <span>
-                {session?.workflowStatus || payload?.workflowStatus || '—'} · revision{' '}
-                {payload?.contentRevision ?? session?.contentRevision ?? '—'}
-              </span>
-            </div>
-            <div className="row">
-              <strong>Last synchronized</strong>
-              <span className="muted">{session?.lastSyncedAt ? new Date(session.lastSyncedAt).toLocaleString() : '—'}</span>
-            </div>
-          </div>
+          <Card className="bg-gradient-to-br from-white to-temple-blush">
+            <CardContent className="grid grid-cols-2 gap-2 pt-4 text-[11px]">
+              <Summary label={t('fill.donation')} value={`₹${session?.donationAmount ?? payload?.permittedScalars.donationAmount ?? '—'}`} />
+              <Summary
+                label={t('fill.pilgrims')}
+                value={`${selected.length}/${payload?.pilgrims.length || session?.pilgrimCount || 0}`}
+              />
+              <Summary label={t('fill.ttdAccount')} value={session?.ttdAccountLabel || '—'} />
+              <Summary label={t('fill.revision')} value={String(payload?.contentRevision ?? session?.contentRevision ?? '—')} />
+            </CardContent>
+          </Card>
 
           {auditErrors.length > 0 && (
-            <div className="pill err">
-              <div>Prepared field issues:</div>
-              <ul>
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-900">
+              <ul className="list-disc pl-4">
                 {auditErrors.map((e) => (
                   <li key={e}>{e}</li>
                 ))}
@@ -284,108 +301,92 @@ export default function App() {
             </div>
           )}
 
-          <div className="row">
-            <label>Pilgrim group</label>
-            {payload?.pilgrims.map((p) => (
-              <label key={p.id} className="checkbox">
-                <input type="checkbox" checked={selected.includes(p.id)} onChange={() =>
-                  setSelected((prev) => (prev.includes(p.id) ? prev.filter((x) => x !== p.id) : [...prev, p.id]))
-                } />
-                <span>{p.fullName}</span>
-              </label>
-            ))}
+          <div className="rounded-xl border border-red-100 bg-white p-3">
+            <p className="mb-2 text-xs font-bold text-stone-700">{t('fill.pilgrimGroup')}</p>
+            <div className="max-h-28 space-y-1 overflow-y-auto">
+              {payload?.pilgrims.map((p) => (
+                <label key={p.id} className="flex items-center gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    className="accent-temple-red"
+                    checked={selected.includes(p.id)}
+                    onChange={() =>
+                      setSelected((prev) => (prev.includes(p.id) ? prev.filter((x) => x !== p.id) : [...prev, p.id]))
+                    }
+                  />
+                  <span>{p.fullName}</span>
+                </label>
+              ))}
+            </div>
           </div>
 
-          <div className="actions">
-            <button
-              disabled={busy || selected.length === 0}
-              onClick={async () => {
-                setBusy(true);
-                setBusyLabel('Syncing with DarshanDesk…');
-                setError('');
-                try {
-                  await sync({ keepBusy: true });
-                  setBusyLabel('Applying fields on TTD page…');
-                  if (!auditErrors.length) await fill();
-                } catch (e) {
-                  setError(e instanceof Error ? e.message : 'Sync & fill failed');
-                } finally {
-                  setBusy(false);
-                  setBusyLabel('');
-                }
-              }}
-            >
-              Sync &amp; Fill
-            </button>
-            <button className="secondary" disabled={busy || selected.length === 0} onClick={validateFields}>
-              Validate fields
-            </button>
-            <button className="secondary" onClick={() => send({ type: 'OPEN_OFFICIAL_PORTAL' })}>
-              Open TTD website
-            </button>
-            <button className="secondary" disabled={busy} onClick={disconnect}>
-              Disconnect
-            </button>
+          <Button
+            className="h-11 w-full text-base font-bold shadow-md"
+            disabled={busy || selected.length === 0}
+            onClick={() => void syncThenFill(false)}
+          >
+            <Zap className="mr-2 inline h-4 w-4" />
+            {t('fill.syncFill')}
+          </Button>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="secondary" size="sm" disabled={busy || selected.length === 0} onClick={() => void validateFields()}>
+              {t('fill.validate')}
+            </Button>
+            <Button variant="secondary" size="sm" disabled={busy} onClick={() => void sync()}>
+              {t('fill.syncOnly')}
+            </Button>
           </div>
 
-          <p className="muted">
-            On live TTD, open <strong>Pilgrim Details</strong> (e.g. SRIVANI current booking), then Sync &amp; Fill. You still enter
-            captcha and submit.
-          </p>
-
-          <label className="checkbox">
-            <input type="checkbox" checked={allowOverwrite} onChange={(e) => setAllowOverwrite(e.target.checked)} />
-            <span>Overwrite conflicting visible values (with caution)</span>
+          <label className="flex items-center gap-2 text-[10px] text-stone-600">
+            <input type="checkbox" className="accent-temple-red" checked={allowOverwrite} onChange={(e) => setAllowOverwrite(e.target.checked)} />
+            {t('fill.overwrite')}
           </label>
 
           {results.length > 0 && (
-            <>
-              <div className="row">
-                <label>Field results</label>
-                <div className="results">
-                  {results.map((r) => (
-                    <div key={r.key}>
-                      <strong>{r.displayLabel}</strong>: {r.status}
-                      {r.message ? ` — ${r.message}` : ''}
-                    </div>
-                  ))}
-                </div>
+            <div className="rounded-xl border border-red-100 bg-white p-2">
+              <p className="mb-1 text-xs font-bold text-temple-red">{t('fill.results')}</p>
+              <div className="max-h-32 overflow-y-auto text-[10px]">
+                {results.map((r) => (
+                  <div key={r.key} className="border-b border-stone-50 py-1 last:border-0">
+                    <span className="font-semibold">{r.displayLabel}</span>: {r.status}
+                    {r.message ? ` — ${r.message}` : ''}
+                  </div>
+                ))}
               </div>
-
               {validation && !validation.ok && (
-                <div className="pill err">
-                  Validation errors:
-                  <ul>
-                    {validation.fieldErrors?.map((f) => (
-                      <li key={f.label}>
-                        {f.label}: {f.message}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                <p className="mt-2 text-[10px] text-red-700">
+                  {validation.fieldErrors?.map((f) => `${f.label}: ${f.message}`).join('; ')}
+                </p>
               )}
-
-              <label className="checkbox">
+              <label className="mt-2 flex items-center gap-2 text-[10px]">
                 <input type="checkbox" checked={reviewed} onChange={(e) => setReviewed(e.target.checked)} />
-                <span>I reviewed every filled field — I will submit manually on the official site</span>
+                {t('fill.reviewed')}
               </label>
-              {reviewed && validation?.ok && <p className="pill ok">Ready for operator submission (no auto-submit).</p>}
-            </>
+              {reviewed && validation?.ok && <p className="text-[10px] font-semibold text-emerald-700">{t('fill.readySubmit')}</p>}
+            </div>
           )}
+
+          <Button variant="ghost" size="sm" className="w-full text-stone-500" disabled={busy} onClick={() => void disconnect()}>
+            {t('fill.disconnect')}
+          </Button>
         </>
       )}
 
-      {error && <p className="pill err">{error}</p>}
-
-      {busy && (
-        <div className="loader-overlay" role="status" aria-live="polite">
-          <div className="loader-card">
-            <div className="loader-spinner" aria-hidden="true" />
-            <p className="loader-title">{busyLabel || 'Please wait…'}</p>
-            <p className="muted loader-hint">Keep this tab on Pilgrim Details while fields are applied.</p>
-          </div>
-        </div>
+      {error && (
+        <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-900">{error}</div>
       )}
+
+      {busy && <FillLoader label={busyLabel || t('fill.working')} step={fillStep} />}
+    </div>
+  );
+}
+
+function Summary({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[9px] font-bold uppercase tracking-wide text-stone-500">{label}</p>
+      <p className="truncate font-bold text-temple-black">{value}</p>
     </div>
   );
 }

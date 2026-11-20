@@ -1,7 +1,0 @@
-{
-  "bundle": {
-    "resources": {
-      "../backend/dist/ttdapi.exe": "backend/ttdapi.exe"
-    }
-  }
-}

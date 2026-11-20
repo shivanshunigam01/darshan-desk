@@ -8,3 +8,5 @@ coverage/
 *.log
 apps/extension/release/
 test-results/
+docs/handoff-extract/
+.cursor/

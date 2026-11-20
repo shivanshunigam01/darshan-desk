@@ -2,26 +2,30 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 
-function formatParts(date: Date, timeZone: string) {
-  const fmt = new Intl.DateTimeFormat('en-IN', {
+function formatHeaderTime(date: Date, timeZone: string) {
+  return new Intl.DateTimeFormat('en-IN', {
     timeZone,
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
     hour12: true,
-    timeZoneName: 'short',
-  });
-  return fmt.format(date);
+  }).format(date);
+}
+
+function formatHeaderDate(date: Date, timeZone: string) {
+  return new Intl.DateTimeFormat('en-IN', {
+    timeZone,
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+  }).format(date);
 }
 
 export function LiveClock() {
   const { t } = useTranslation();
   const { settings } = useAuth();
   const [now, setNow] = useState(() => new Date());
+  const tz = settings.defaultTimezone;
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(new Date()), 1000);
@@ -29,10 +33,10 @@ export function LiveClock() {
   }, []);
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white px-3 py-2 text-xs" aria-live="polite">
-      <div className="font-semibold text-stone-800">{t('clock.label')}</div>
-      <div className="mt-1 font-mono text-[11px] text-stone-700">{formatParts(now, settings.defaultTimezone)}</div>
-      <p className="mt-1 text-[10px] text-stone-500">{t('clock.hint')}</p>
+    <div className="shrink-0 text-right leading-tight" aria-live="polite" title={t('clock.hint')}>
+      <p className="text-[9px] font-semibold uppercase tracking-wide text-stone-400">{t('clock.label')}</p>
+      <p className="font-mono text-sm font-bold tabular-nums text-white">{formatHeaderTime(now, tz)}</p>
+      <p className="text-[9px] text-stone-400">{formatHeaderDate(now, tz)}</p>
     </div>
   );
 }

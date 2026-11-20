@@ -4,16 +4,21 @@ MERN SaaS module for agency operators to prepare SRIVANI trust bookings against 
 
 > Policy numbers in `server/src/fixtures/ttdPolicySample.json` are **sample fixture data** (min donation ₹10,000, current max 4 pilgrims, advance max 9, reporting 04:00 PM, release 11:03:00). Replace via admin policy API before production use.
 
-## Quick start
+## Quick start (extension-first)
 
-1. Install MongoDB locally (or set `MONGODB_URI` in `server/.env`).
+1. MongoDB locally or Atlas — set `MONGODB_URI` in `server/.env`.
 2. From repo root:
    ```bash
    npm install
    npm run dev
    ```
-3. Client: http://localhost:5173  
-   API: http://localhost:4000  
+3. API: http://localhost:4000  
+4. Load extension: `apps/extension/dist` in Chrome → sign in / register in popup.
+
+Legacy dashboard: `npm run dev:legacy-dashboard` (client on :5173).
+
+**Production API on EC2:** [EC2_UBUNTU_NGINX.md](./EC2_UBUNTU_NGINX.md)  
+**Extension download page:** `apps/landing/` (serve with Nginx — see same guide).
 
 **Demo login:** `operator@darshandesk.local` / `operator123`  
 **Admin (policy CRUD):** `admin@darshandesk.local` / `admin123`

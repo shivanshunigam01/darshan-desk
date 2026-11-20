@@ -21,9 +21,21 @@
     width: 400px;
     max-height: 600px;
     overflow: hidden;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif;
     color: var(--dd-text);
-    background: var(--dd-bg);
+    background: linear-gradient(165deg, #fff5f5 0%, #f5f5f5 45%, #fafafa 100%);
+  }
+
+  .dd-page-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #101010;
+  }
+
+  .dd-card-accent {
+    border-top: 3px solid #b80012;
+    box-shadow: 0 8px 24px rgba(184, 0, 18, 0.08);
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -4,7 +4,8 @@ import { Operator } from '../models/index.js';
 import { requireAuth, signToken } from '../middleware/auth.js';
 import { getAgencyLicenseStatus } from '../services/agencyLicenseService.js';
 import { loginRateLimiter } from '../middleware/security.js';
-import { loginSchema, validateBody } from '../validation/schemas.js';
+import { loginSchema, registerSchema, validateBody } from '../validation/schemas.js';
+import { registerExtensionUser } from '../services/registerService.js';
 
 const router = express.Router();
 
@@ -29,6 +30,21 @@ router.post('/login', loginRateLimiter(), validateBody(loginSchema), async (req,
       role: operator.role,
     },
   });
+});
+
+router.post('/register', loginRateLimiter(), validateBody(registerSchema), async (req, res, next) => {
+  try {
+    const body = req.validatedBody;
+    for (const key of Object.keys(req.body || {})) {
+      if (/password|otp|captcha|ttdPassword|portalPassword/i.test(key) && key !== 'password') {
+        return res.status(400).json({ error: `Field "${key}" is not accepted on registration` });
+      }
+    }
+    const result = await registerExtensionUser(body);
+    res.status(201).json(result);
+  } catch (e) {
+    next(e);
+  }
 });
 
 router.get('/me', requireAuth, async (req, res) => {

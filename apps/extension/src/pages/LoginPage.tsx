@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import logoUrl from '../assets/logo.jpg';
 import { Alert } from '../components/ui/alert';
@@ -67,7 +68,12 @@ export function LoginPage() {
             <Button className="w-full bg-temple-red hover:bg-red-900" disabled={busy}>
               {busy ? t('login.loading') : t('login.submit')}
             </Button>
-            <p className="text-center text-[10px] text-stone-400">{t('login.forgot')}</p>
+            <p className="text-center text-[10px] text-stone-400">
+              {t('login.forgot')}{' '}
+              <Link className="text-white underline" to="/register">
+                {t('login.createAccount')}
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>

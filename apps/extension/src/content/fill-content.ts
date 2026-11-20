@@ -70,6 +70,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     sendResponse({ ok: true, detection: detectForm() });
     return;
   }
+  if (message?.type === 'FILL_PAGE_OVERLAY') {
+    if (message.show) {
+      if (document.getElementById('dd-fill-overlay-root')) {
+        updateFillOverlayStatus(document, message.status || 'Working…');
+      } else {
+        showFillOverlay(document, message.status || 'Working…', message.title || 'DarshanDesk autofill');
+      }
+    } else {
+      hideFillOverlay(document);
+    }
+    sendResponse({ ok: true });
+    return;
+  }
   return false;
 });
 

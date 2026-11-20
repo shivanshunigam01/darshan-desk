@@ -1,6 +1,0 @@
-Read TTD_SRIVANI_DEVELOPER_REQUIREMENTS.md or .txt first.
-The source ZIP is the clean Booking Control Share v2.2.0 baseline.
-Windows portable app/installer can be supplied separately.
-Developer changes are allowed across the app, including timing logic.
-Acceptance requires genuine confirmed bookings and recordings on three consecutive days.
-This handoff contains no owner credentials, live tickets, or recordings.
