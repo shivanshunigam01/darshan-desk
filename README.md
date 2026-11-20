@@ -21,7 +21,7 @@ Legacy dashboard: `npm run dev:legacy-dashboard` (client on :5173).
 
 **Production (copy-paste commands):** [PRODUCTION_COMMANDS.md](./PRODUCTION_COMMANDS.md) — EC2, **PM2**, **Nginx**, **Certbot**  
 **Longer guide:** [EC2_UBUNTU_NGINX.md](./EC2_UBUNTU_NGINX.md)  
-**Extension landing / ZIP:** `apps/landing/` → Nginx at `www.yourdomain.com`
+**Landing (Vercel):** folder `apps/landing/` — see [apps/landing/README.md](./apps/landing/README.md)
 
 **Demo login:** `operator@darshandesk.local` / `operator123`  
 **Admin (policy CRUD):** `admin@darshandesk.local` / `admin123`
