@@ -1,4 +1,4 @@
-import { Home, Users, Wallet, Sparkles, Settings, Landmark } from 'lucide-react';
+import { Home, Users, Wallet, Sparkles, Settings, Landmark, Activity } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { cn } from '../../lib/utils';
@@ -9,6 +9,7 @@ const items = [
   { to: '/pilgrims', key: 'nav.pilgrims', icon: Users },
   { to: '/preparation', key: 'nav.preparation', icon: Wallet },
   { to: '/fill', key: 'nav.fill', icon: Sparkles },
+  { to: '/monitor', key: 'nav.monitor', icon: Activity },
   { to: '/settings', key: 'nav.settings', icon: Settings },
 ] as const;
 

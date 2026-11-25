@@ -106,8 +106,8 @@ async function runBookingAssist(message: {
   showFillOverlay(document, 'Complete CAPTCHA if shown — waiting for Continue…', 'DarshanDesk booking assist');
   try {
     return await runSrivaniBookingAssist(document, {
-      autoContinue: message.autoContinue !== false,
-      autoPaymentGateway: message.autoPaymentGateway !== false,
+      autoContinue: message.autoContinue === true,
+      autoPaymentGateway: message.autoPaymentGateway === true,
       preferredGateway: message.preferredGateway || 'ANY',
       onStatus: (line) => updateFillOverlayStatus(document, line),
     });
@@ -293,6 +293,8 @@ function finishReport(
       results.every((r) =>
         ['verified', 'skipped_declined', 'skipped_duplicate', 'needs_confirmation'].includes(r.status)
       ),
+    /** Field assist only — never official booking confirmation */
+    bookingConfirmed: false,
   };
   try {
     void chrome.runtime.sendMessage(report);

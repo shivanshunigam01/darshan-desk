@@ -32,13 +32,40 @@ function bindControlled(el, get, set) {
   el.addEventListener('change', () => set(el.value));
 }
 
+function showMockOfficialLoading(done) {
+  const el = document.createElement('div');
+  el.id = 'mock-official-loading';
+  el.className = 'mock-loading-overlay';
+  el.style.cssText =
+    'position:fixed;inset:0;background:rgba(0,0,0,0.5);color:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;font:600 16px system-ui,sans-serif';
+  el.textContent = 'Please wait… loading';
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.remove();
+    done();
+  }, 1400);
+}
+
+function quotaStatusHtml(quota, { systemId = 'mock-system-time', remainId = 'mock-remaining-time' } = {}) {
+  return `
+      <motion-bar class="quota-status" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;font-size:0.9rem;margin-bottom:0.75rem">
+        <div>Quota Release Time: <span data-dd-quota="quotaReleaseTime">${quota.releaseTime}</span></div>
+        <div>System Time: <span data-dd-quota="systemTime" id="${systemId}">--:--:--</span></div>
+        <div>Remaining Time: <span data-dd-quota="remainingTime" id="${remainId}">00:05:00</span></div>
+        <div>Available Quota for (Current Day): <span data-dd-quota="availableQuota">${quota.available}</span></div>
+        <div>Reporting Time: <span data-dd-quota="reportingTime">${quota.reporting}</span></div>
+        <div>Payment Pending: <span data-dd-quota="paymentPending">0</span></div>
+        <div>Success: <span data-dd-quota="successCount">3</span></div>
+      </motion-bar>`;
+}
+
 function render() {
   const root = document.getElementById('root');
   const quota = { available: 18, releaseTime: '11:03 AM', reporting: '04:00 PM' };
 
   root.innerHTML = `
     <nav class="steps">
-      ${['quota', 'booking', 'pilgrims', 'declaration', 'confirm']
+      ${['quota', 'booking', 'pilgrims', 'declaration', 'payment-summary', 'confirm']
         .map(
           (s) =>
             `<button type="button" class="step ${state.step === s ? 'active' : ''}" data-step="${s}">${s}</button>`
@@ -48,10 +75,9 @@ function render() {
 
     <section class="panel" data-dd-step="quota" ${state.step === 'quota' ? '' : 'hidden'}>
       <h2>Quota information (read-only)</h2>
-      <p data-dd-field="quota-available">Available quota: <strong>${quota.available}</strong></p>
-      <p>Release time: ${quota.releaseTime} · Reporting: ${quota.reporting}</p>
+      ${quotaStatusHtml(quota)}
       <p class="hint">Displayed quota does not guarantee ticket issuance.</p>
-      <button type="button" class="next" data-next="booking">Continue to booking</button>
+      <button type="button" id="mock-continue" disabled aria-disabled="true">Continue</button>
     </section>
 
     <section class="panel" data-dd-step="booking" ${state.step === 'booking' ? '' : 'hidden'}>
@@ -75,7 +101,8 @@ function render() {
     </section>
 
     <section class="panel" data-dd-step="pilgrims" ${state.step === 'pilgrims' ? '' : 'hidden'}>
-      <h2>Pilgrim details (${pilgrimSlots} slots)</h2>
+      <h2>Pilgrim Details for TTD Break Darshan (${pilgrimSlots} slots)</h2>
+      ${quotaStatusHtml(quota, { systemId: 'mock-pilgrim-system-time', remainId: 'mock-pilgrim-remaining-time' })}
       ${state.pilgrims
         .map(
           (p, i) => `
@@ -114,8 +141,18 @@ function render() {
       <p class="hint">Dynamic pilgrim fields — use DarshanDesk extension on this step.</p>
       <div class="actions">
         <button type="button" data-next="booking">Back</button>
-        <button type="button" data-next="declaration">Continue</button>
+        <button type="button" id="mock-pilgrim-continue" disabled aria-disabled="true">Continue</button>
       </div>
+    </section>
+
+    <section class="panel" data-dd-step="payment-summary" ${state.step === 'payment-summary' ? '' : 'hidden'}>
+      <h2>Donation and Darshan Payment Summary</h2>
+      <p>Donation amount: <span data-dd-quota="mockDonation">₹${Number(state.donation || MIN_DONATION).toLocaleString('en-IN')}</span></p>
+      <p>Break Darshan amount: <span data-dd-quota="mockDarshan">₹300</span></p>
+      <p>Total payable: <span data-dd-quota="mockTotal">₹${(Number(state.donation || MIN_DONATION) + 300).toLocaleString('en-IN')}</span></p>
+      <p>No. of pilgrims: <span data-dd-quota="mockPilgrimCount">${pilgrimSlots}</span></p>
+      <p class="hint">Operator selects ICICI / HDFC / Union Bank and clicks Pay Now manually.</p>
+      <button type="button" data-next="declaration">Back</button>
     </section>
 
     <section class="panel" data-dd-step="declaration" ${state.step === 'declaration' ? '' : 'hidden'}>
@@ -140,10 +177,17 @@ function render() {
       <pre id="summary" class="hint"></pre>
       <label>Official response scenario</label>
       <select id="qa-scenario">
-        <option value="quota_exceeded">Cannot book as quota exceeded</option>
-        <option value="session_expired">Official session expired</option>
-        <option value="rate_limit">HTTP 429 rate limit</option>
-        <option value="success_pending">Payment pending</option>
+        <option value="quota_display_rejected">Quota shown but allocation rejected</option>
+        <option value="quota_exhausted">Quota exhausted (0)</option>
+        <option value="payment_pending">Payment pending</option>
+        <option value="loading_stuck">Loading overlay stuck</option>
+        <option value="duplicate_guard">Duplicate action guard (info)</option>
+        <option value="session_expired">Session expired</option>
+        <option value="eligibility_error">Eligibility error</option>
+        <option value="payment_gateway_error">Payment gateway error</option>
+        <option value="unknown_outcome">Unknown outcome</option>
+        <option value="confirmed">Confirmed transaction</option>
+        <option value="rate_limit">Rate limited</option>
       </select>
       <button type="button" id="qa-simulate">Simulate official check</button>
       <pre id="qa-output" class="hint"></pre>
@@ -154,6 +198,30 @@ function render() {
   root.querySelectorAll('[data-step]').forEach((btn) => {
     btn.addEventListener('click', () => setStep(btn.getAttribute('data-step')));
   });
+
+  const mockContinue = root.querySelector('#mock-continue');
+  if (mockContinue) {
+    mockContinue.addEventListener('click', (e) => {
+      if (mockContinue.hasAttribute('disabled')) {
+        e.preventDefault();
+        return;
+      }
+      e.preventDefault();
+      showMockOfficialLoading(() => setStep('booking'));
+    });
+  }
+
+  const pilgrimContinue = root.querySelector('#mock-pilgrim-continue');
+  if (pilgrimContinue) {
+    pilgrimContinue.addEventListener('click', (e) => {
+      if (pilgrimContinue.hasAttribute('disabled')) {
+        e.preventDefault();
+        return;
+      }
+      e.preventDefault();
+      showMockOfficialLoading(() => setStep('payment-summary'));
+    });
+  }
 
   root.querySelectorAll('[data-next]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -211,15 +279,80 @@ function render() {
   );
 
   const scenarios = {
-    quota_exceeded: { message: 'Cannot book as quota exceeded', serverRejected: true },
-    session_expired: { message: 'Session expired — please login again', serverRejected: false },
-    rate_limit: { message: 'Too many requests (429)', serverRejected: false, httpStatus: 429 },
-    success_pending: { message: 'Payment pending confirmation', serverRejected: false, paymentPending: true },
+    quota_display_rejected: {
+      message: 'Cannot book as quota exceeded',
+      serverRejected: true,
+      banner: 'Cannot book as quota exceeded',
+      availableQuota: 183,
+      paymentPending: 317,
+      successCount: 0,
+    },
+    quota_exhausted: { message: 'No quota available', banner: 'No quota available', availableQuota: 0 },
+    payment_pending: { message: 'Payment pending confirmation', paymentPending: true, banner: 'Payment pending for pilgrim booking' },
+    loading_stuck: { loadingOverlay: true, banner: 'Please wait… loading' },
+    duplicate_guard: { message: 'Simulate duplicate extension action blocked', banner: null },
+    session_expired: { message: 'Session expired — please login again', banner: 'Session expired — please login again' },
+    eligibility_error: { message: 'Not eligible for current break darshan', banner: 'Not eligible for current break darshan' },
+    payment_gateway_error: { message: 'Payment failed at gateway', banner: 'Payment failed at gateway' },
+    unknown_outcome: { message: 'Unexpected official response code 9001', banner: 'Unexpected official response code 9001' },
+    confirmed: {
+      message: 'Booking confirmed. Reference number TTD-MOCK-REF-001',
+      banner: 'Booking confirmed. Reference number TTD-MOCK-REF-001',
+      confirmed: true,
+    },
+    rate_limit: { message: 'Too many requests (429)', banner: 'Too many requests (HTTP 429 rate limit)' },
   };
 
   root.querySelector('#qa-simulate').addEventListener('click', () => {
     const key = root.querySelector('#qa-scenario').value;
-    root.querySelector('#qa-output').textContent = JSON.stringify(scenarios[key], null, 2);
+    const scenario = scenarios[key];
+    root.querySelector('#qa-output').textContent = JSON.stringify(scenario, null, 2);
+    document.getElementById('mock-official-loading')?.remove();
+    document.getElementById('qa-official-banner')?.remove();
+    if (scenario.loadingOverlay) {
+      const el = document.createElement('div');
+      el.id = 'mock-official-loading';
+      el.className = 'mock-loading-overlay';
+      el.style.cssText =
+        'position:fixed;inset:0;background:rgba(0,0,0,0.5);color:#fff;display:flex;align-items:center;justify-content:center;z-index:9999';
+      el.textContent = scenario.banner || 'Please wait… loading';
+      document.body.appendChild(el);
+    } else     if (key === 'quota_display_rejected' || scenario.serverRejected) {
+      document.body.setAttribute(
+        'data-dd-booking-stage-response',
+        JSON.stringify({
+          endpoint: '/dms/srivaniCurrentDayDarshanBooking',
+          httpStatus: 200,
+          body: { error: scenario.banner || scenario.message || 'Cannot book as quota exceeded' },
+        })
+      );
+    } else {
+      document.body.removeAttribute('data-dd-booking-stage-response');
+    }
+
+    if (scenario.banner) {
+      const el = document.createElement('div');
+      el.id = 'qa-official-banner';
+      el.setAttribute('role', 'alert');
+      el.style.cssText = 'margin:1rem 0;padding:0.75rem;border:2px solid #b91c1c;background:#fef2f2;color:#7f1d1d;font-weight:600';
+      el.textContent = scenario.banner;
+      root.prepend(el);
+    }
+    if (scenario.availableQuota != null) {
+      document.querySelectorAll('[data-dd-quota="availableQuota"]').forEach((n) => {
+        n.textContent = String(scenario.availableQuota);
+      });
+    }
+    if (scenario.paymentPending != null) {
+      document.querySelectorAll('[data-dd-quota="paymentPending"]').forEach((n) => {
+        n.textContent = String(scenario.paymentPending);
+      });
+    }
+    if (scenario.successCount != null) {
+      document.querySelectorAll('[data-dd-quota="successCount"]').forEach((n) => {
+        n.textContent = String(scenario.successCount);
+      });
+    }
   });
 
   const captchaToggle = root.querySelector('#toggle-captcha');
@@ -234,6 +367,50 @@ function render() {
     e.preventDefault();
     alert('Mock only — operator completes submission and payment on the official portal.');
   });
+
+  if (window.__ddMockQuotaClock) {
+    clearInterval(window.__ddMockQuotaClock);
+    window.__ddMockQuotaClock = null;
+  }
+  const countdownSteps = [
+    {
+      step: 'quota',
+      continueId: 'mock-continue',
+      systemId: 'mock-system-time',
+      remainId: 'mock-remaining-time',
+    },
+    {
+      step: 'pilgrims',
+      continueId: 'mock-pilgrim-continue',
+      systemId: 'mock-pilgrim-system-time',
+      remainId: 'mock-pilgrim-remaining-time',
+    },
+  ];
+  const active = countdownSteps.find((c) => c.step === state.step);
+  if (active) {
+    const cont = root.querySelector(`#${active.continueId}`);
+    const sys = root.querySelector(`#${active.systemId}`);
+    const rem = root.querySelector(`#${active.remainId}`);
+    if (cont && sys && rem) {
+      let remainSec = 6;
+      cont.setAttribute('disabled', '');
+      cont.setAttribute('aria-disabled', 'true');
+      const tick = () => {
+        const now = new Date();
+        sys.textContent = now.toLocaleTimeString('en-IN', { hour12: false });
+        const mm = String(Math.floor(remainSec / 60)).padStart(2, '0');
+        const ss = String(remainSec % 60).padStart(2, '0');
+        rem.textContent = `00:${mm}:${ss}`;
+        if (remainSec <= 0) {
+          cont.removeAttribute('disabled');
+          cont.setAttribute('aria-disabled', 'false');
+        }
+        remainSec -= 1;
+      };
+      tick();
+      window.__ddMockQuotaClock = setInterval(tick, 1000);
+    }
+  }
 }
 
 document.body.setAttribute('data-dd-mapping', 'mock-srivani-v1');

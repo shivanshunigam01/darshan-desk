@@ -10,6 +10,9 @@
       "import": "./dist/index.js"
     }
   },
+  "dependencies": {
+    "@darshan-desk/reliability": "1.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "test": "npm run build && node --experimental-vm-modules ../../node_modules/jest/bin/jest.js --runInBand tests/"

@@ -43,6 +43,18 @@ export function SettingsPage() {
           {t('settings.bookingAssist')}
         </label>
         <p className="text-[10px] text-stone-500">{t('settings.bookingAssistHint')}</p>
+        <p className="text-[10px] text-stone-500">{t('settings.continueMonitorHint')}</p>
+
+        <label className="flex items-center gap-2 text-xs font-medium">
+          <input
+            type="checkbox"
+            className="accent-temple-red"
+            checked={settings.notifyOnContinueReady}
+            onChange={(e) => updateSettings({ notifyOnContinueReady: e.target.checked })}
+          />
+          {t('settings.notifyContinue')}
+        </label>
+        <p className="text-[10px] text-stone-500">{t('settings.notifyContinueHint')}</p>
 
         <label className="block text-xs font-medium">
           {t('settings.paymentGateway')}

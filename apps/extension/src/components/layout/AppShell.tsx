@@ -9,6 +9,7 @@ import { PilgrimsPage } from '../../pages/PilgrimsPage';
 import { PreparationPage } from '../../pages/PreparationPage';
 import { ReadyToFillPage } from '../../pages/ReadyToFillPage';
 import { SettingsPage } from '../../pages/SettingsPage';
+import { BookingMonitorPage } from '../../pages/BookingMonitorPage';
 
 export function AppShell() {
   const { auth } = useAuth();
@@ -32,6 +33,7 @@ export function AppShell() {
           <Route path="/pilgrims" element={<PilgrimsPage />} />
           <Route path="/preparation" element={<PreparationPage />} />
           <Route path="/fill" element={<ReadyToFillPage />} />
+          <Route path="/monitor" element={<BookingMonitorPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </div>

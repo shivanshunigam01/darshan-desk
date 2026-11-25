@@ -24,7 +24,10 @@ export type ProtocolMessage =
       autoContinue?: boolean;
       autoPaymentGateway?: boolean;
       preferredGateway?: 'ICICI' | 'HDFC' | 'UNION' | 'ANY';
-    };
+    }
+  | { type: 'GET_PAGE_MONITOR' }
+  | { type: 'PAGE_MONITOR_REQUEST' }
+  | { type: 'PAGE_MONITOR_UPDATE'; snapshot: unknown };
 
 export type ProtocolResponse = {
   ok: boolean;
@@ -37,4 +40,5 @@ export type ProtocolResponse = {
   validation?: unknown;
   formDetection?: unknown;
   event?: string;
+  snapshot?: unknown;
 };

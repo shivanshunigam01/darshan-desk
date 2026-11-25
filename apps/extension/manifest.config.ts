@@ -46,7 +46,7 @@ export default defineManifest({
     48: 'src/assets/logo.jpg',
     128: 'src/assets/logo.jpg',
   },
-  permissions: ['storage', 'tabs'],
+  permissions: ['storage', 'tabs', 'notifications'],
   host_permissions,
   action: {
     default_title: 'DarshanDesk',
@@ -75,6 +75,16 @@ export default defineManifest({
     {
       matches: ttd_login_matches,
       js: ['src/content/fill-content.ts'],
+      run_at: 'document_idle',
+    },
+    {
+      matches: content_matches,
+      js: ['src/content/page-monitor-content.ts'],
+      run_at: 'document_idle',
+    },
+    {
+      matches: ttd_login_matches,
+      js: ['src/content/page-monitor-content.ts'],
       run_at: 'document_idle',
     },
   ],

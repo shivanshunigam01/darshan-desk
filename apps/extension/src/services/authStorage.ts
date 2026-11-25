@@ -26,14 +26,16 @@ export type ExtensionSettings = {
   defaultTimezone: string;
   bookingAssist: boolean;
   paymentGateway: PaymentGatewayPreference;
+  notifyOnContinueReady: boolean;
 };
 
 const defaultSettings: ExtensionSettings = {
   language: 'en',
   apiBaseUrl: API_BASE_URL,
   defaultTimezone: 'Asia/Kolkata',
-  bookingAssist: true,
+  bookingAssist: false,
   paymentGateway: 'ANY',
+  notifyOnContinueReady: false,
 };
 
 export async function loadAuth(): Promise<OperatorAuth | null> {

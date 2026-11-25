@@ -49,13 +49,16 @@ export function findButtonByLabel(doc: Document, pattern: RegExp): HTMLElement |
 }
 
 export function findContinueButton(doc: Document): HTMLElement | null {
+  const matches: HTMLElement[] = [];
   for (const el of clickableCandidates(doc)) {
     const label = `${el.textContent || ''} ${el.getAttribute('value') || ''}`.trim();
     if (!/\bcontinue\b/i.test(label)) continue;
     if (/pay\s*now/i.test(label)) continue;
-    if (isVisible(el)) return el;
+    if (isVisible(el)) matches.push(el);
   }
-  return null;
+  if (!matches.length) return null;
+  const exact = matches.find((el) => /^continue$/i.test(`${el.textContent || ''}`.trim()));
+  return exact ?? matches[0]!;
 }
 
 export function isActionable(el: HTMLElement): boolean {

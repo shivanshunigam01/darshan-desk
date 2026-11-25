@@ -7,12 +7,11 @@ import type { ExtensionSession } from '../../shared/storage';
 import { API_BASE_URL } from '../../config/api';
 import { useAuth } from '../../hooks/useAuth';
 import { loadPendingPairing } from '../../services/authStorage';
+import { autoConnectExtensionSession } from '../../lib/extensionConnect';
 import { FillLoader } from '../../components/fill/FillLoader';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-
 type Payload = {
   preparationId: string;
   contentRevision?: number;
@@ -29,9 +28,8 @@ function send<T extends ProtocolMessage>(msg: T): Promise<ProtocolResponse> {
 
 export default function LegacyFillWorkflow() {
   const { t } = useTranslation();
-  const { settings } = useAuth();
+  const { auth, settings } = useAuth();
   const apiBaseUrl = API_BASE_URL.replace(/\/$/, '');
-  const [pairingToken, setPairingToken] = useState('');
   const [session, setSession] = useState<ExtensionSession | null>(null);
   const [payload, setPayload] = useState<Payload | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
@@ -50,6 +48,7 @@ export default function LegacyFillWorkflow() {
   const [hasPortalLogin, setHasPortalLogin] = useState(false);
   const [loginFillNote, setLoginFillNote] = useState('');
   const validateOnlyRef = useRef(false);
+  const bootstrapRef = useRef(false);
 
   const refreshState = useCallback(async () => {
     const r = await send({ type: 'GET_STATE' });
@@ -62,15 +61,44 @@ export default function LegacyFillWorkflow() {
     }
   }, [selected.length]);
 
+  const reconnectSession = useCallback(async () => {
+    if (!auth) {
+      setError(t('fill.reconnectLogin'));
+      return;
+    }
+    setBusy(true);
+    setBusyLabel(t('fill.reconnecting'));
+    setError('');
+    try {
+      let r = await send({ type: 'GET_STATE' });
+      if (!r.session || !(r.session as ExtensionSession).connected) {
+        const pending = await loadPendingPairing();
+        if (pending) {
+          r = await send({ type: 'EXTENSION_PAIR_REQUEST', pairingToken: pending, apiBaseUrl });
+        } else {
+          r = await autoConnectExtensionSession(auth);
+        }
+      }
+      if (!r.ok) throw new Error(r.error || 'Connect failed');
+      await refreshState();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t('fill.reconnectFailed'));
+    } finally {
+      setBusy(false);
+      setBusyLabel('');
+    }
+  }, [auth, apiBaseUrl, refreshState, t]);
+
   useEffect(() => {
     refreshState();
     send({ type: 'GET_PORTAL_CREDENTIALS_STATE' }).then((r) => setHasPortalLogin(Boolean(r.hasCredentials)));
-    void loadPendingPairing().then(async (token) => {
-      if (!token) return;
-      const r = await send({ type: 'EXTENSION_PAIR_REQUEST', pairingToken: token, apiBaseUrl });
-      if (r.ok) void refreshState();
-    });
   }, [refreshState]);
+
+  useEffect(() => {
+    if (bootstrapRef.current) return;
+    bootstrapRef.current = true;
+    void reconnectSession();
+  }, [reconnectSession]);
 
   const fillTtdLogin = async () => {
     setBusy(true);
@@ -84,26 +112,6 @@ export default function LegacyFillWorkflow() {
       setLoginFillNote(report?.message || 'Login and password filled — enter captcha yourself.');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login fill failed');
-    } finally {
-      setBusy(false);
-      setBusyLabel('');
-    }
-  };
-
-  const connect = async () => {
-    setBusy(true);
-    setBusyLabel('Connecting to DarshanDesk…');
-    setError('');
-    try {
-      const r = await send({ type: 'EXTENSION_PAIR_REQUEST', pairingToken, apiBaseUrl });
-      if (!r.ok) throw new Error(r.error || 'Connect failed');
-      setSession(r.session as ExtensionSession);
-      const p = r.payload as Payload;
-      setPayload(p);
-      setSelected(p.pilgrims.map((x) => x.id));
-      setAuditErrors((r.validation as { errors?: string[] })?.errors || p.fieldAudit?.errors || []);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Connect failed');
     } finally {
       setBusy(false);
       setBusyLabel('');
@@ -218,10 +226,15 @@ export default function LegacyFillWorkflow() {
         await pageOverlay(true, t('fill.stepBookingAssist'));
         const assistR = await send({
           type: 'SRIVANI_BOOKING_ASSIST_REQUEST',
-          autoContinue: true,
-          autoPaymentGateway: true,
+          autoContinue: false,
+          autoPaymentGateway: settings.bookingAssist,
           preferredGateway: settings.paymentGateway,
         });
+        const mon = await send({ type: 'GET_PAGE_MONITOR' });
+        const snap = mon.snapshot as { outcomeCode?: string; blockPaymentReady?: boolean; officialMessage?: string } | undefined;
+        if (snap?.outcomeCode === 'QUOTA_REJECTED' || snap?.blockPaymentReady) {
+          setAssistNote(snap.officialMessage || 'Official booking rejected — not payment ready.');
+        } else {
         const report = assistR.fillReport as { payNowReady?: boolean; message?: string } | undefined;
         if (report?.payNowReady) {
           setAssistNote(t('fill.payNowManual'));
@@ -229,6 +242,7 @@ export default function LegacyFillWorkflow() {
           setAssistNote(report.message);
         } else if (!assistR.ok) {
           setAssistNote(assistR.error || t('fill.assistFailed'));
+        }
         }
       }
     } catch (e) {
@@ -253,13 +267,19 @@ export default function LegacyFillWorkflow() {
     try {
       const assistR = await send({
         type: 'SRIVANI_BOOKING_ASSIST_REQUEST',
-        autoContinue: true,
-        autoPaymentGateway: true,
+        autoContinue: false,
+        autoPaymentGateway: settings.bookingAssist,
         preferredGateway: settings.paymentGateway,
       });
-      const report = assistR.fillReport as { payNowReady?: boolean; message?: string } | undefined;
-      if (report?.payNowReady) setAssistNote(t('fill.payNowManual'));
-      else setAssistNote(report?.message || assistR.error || t('fill.assistFailed'));
+      const mon = await send({ type: 'GET_PAGE_MONITOR' });
+      const snap = mon.snapshot as { outcomeCode?: string; blockPaymentReady?: boolean; officialMessage?: string } | undefined;
+      if (snap?.outcomeCode === 'QUOTA_REJECTED' || snap?.blockPaymentReady) {
+        setAssistNote(snap.officialMessage || 'Official booking rejected — not payment ready.');
+      } else {
+        const report = assistR.fillReport as { payNowReady?: boolean; message?: string } | undefined;
+        if (report?.payNowReady) setAssistNote(t('fill.payNowManual'));
+        else setAssistNote(report?.message || assistR.error || t('fill.assistFailed'));
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t('fill.assistFailed'));
     } finally {
@@ -313,15 +333,10 @@ export default function LegacyFillWorkflow() {
       {!connected ? (
         <Card>
           <CardContent className="space-y-2 pt-4 text-xs">
-            <Input
-              value={pairingToken}
-              onChange={(e) => setPairingToken(e.target.value)}
-              placeholder={t('fill.pairingPlaceholder')}
-            />
-            <Button className="w-full" disabled={busy || !pairingToken} onClick={() => void connect()}>
-              {t('fill.connect')}
+            <p className="text-stone-600">{t('fill.reconnectHint')}</p>
+            <Button className="w-full" disabled={busy || !auth} onClick={() => void reconnectSession()}>
+              {t('fill.reconnect')}
             </Button>
-            <p className="text-[10px] text-stone-500">{t('fill.pairHint')}</p>
           </CardContent>
         </Card>
       ) : (
@@ -387,7 +402,7 @@ export default function LegacyFillWorkflow() {
 
           {settings.bookingAssist && (
             <Button variant="secondary" size="sm" className="w-full" disabled={busy} onClick={() => void runBookingAssistOnly()}>
-              {t('fill.assistContinue')}
+              {t('fill.assistPayment')}
             </Button>
           )}
 

@@ -23,10 +23,88 @@ import {
   loadPortalCredentials,
   savePortalCredentials,
 } from '../shared/portalCredentials';
+import { loadSettings } from '../services/authStorage';
 
 const EXT_VERSION = chrome.runtime.getManifest().version;
 let cachedPayload: Awaited<ReturnType<typeof apiFillPayload>> | null = null;
 let cachedPayloadRevision: number | undefined;
+let latestPageMonitor: Record<string, unknown> | null = null;
+let lastContinueReady = false;
+let extensionActionInFlight: 'fill' | 'assist' | null = null;
+
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type === 'PAGE_MONITOR_UPDATE' && message.snapshot) {
+    latestPageMonitor = message.snapshot as Record<string, unknown>;
+    void notifyContinueReadyIfNeeded(latestPageMonitor);
+  }
+});
+
+type MonitorContinue = { readyToContinue?: boolean; statusLabel?: string };
+
+async function notifyContinueReadyIfNeeded(snapshot: Record<string, unknown>) {
+  const cont = snapshot.continue as MonitorContinue | undefined;
+  const ready = Boolean(cont?.readyToContinue);
+  if (ready && !lastContinueReady) {
+    const settings = await loadSettings();
+    if (settings.notifyOnContinueReady && chrome.notifications) {
+      chrome.notifications.create('dd-continue-ready', {
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('src/assets/logo.jpg'),
+        title: 'DarshanDesk',
+        message: cont?.statusLabel || 'Ready to Continue — click Continue yourself on TTD.',
+      });
+    }
+  }
+  lastContinueReady = ready;
+}
+
+function assertPageAssistAllowed() {
+  const cont = latestPageMonitor?.continue as { blockExtensionAssist?: boolean; statusLabel?: string } | undefined;
+  if (cont?.blockExtensionAssist) {
+    throw Object.assign(
+      new Error(cont.statusLabel || 'Official page is loading — wait before running extension assist.'),
+      { code: 'PAGE_LOADING' }
+    );
+  }
+}
+
+function assertNoDuplicateExtensionAction(kind: 'fill' | 'assist') {
+  if (extensionActionInFlight) {
+    throw Object.assign(
+      new Error(`Extension ${extensionActionInFlight} already in progress — duplicate action blocked.`),
+      { code: 'DUPLICATE_ACTION' }
+    );
+  }
+  const snap = latestPageMonitor as {
+    blockAutoResubmit?: boolean;
+    outcomeCode?: string;
+    blockSuccessPromotion?: boolean;
+  } | null;
+  if (kind === 'assist' && snap?.blockAutoResubmit && snap.outcomeCode && snap.outcomeCode !== 'PAYMENT_PENDING') {
+    throw Object.assign(
+      new Error(
+        `Official outcome ${snap.outcomeCode} — extension will not run payment assist or retry automatically.`
+      ),
+      { code: snap.outcomeCode }
+    );
+  }
+  if (kind === 'assist' && snap?.outcomeCode === 'QUOTA_REJECTED') {
+    throw Object.assign(
+      new Error('Quota rejected on official page — operator must resolve on TTD without extension automation.'),
+      { code: 'QUOTA_REJECTED' }
+    );
+  }
+}
+
+async function withExtensionActionLock<T>(kind: 'fill' | 'assist', fn: () => Promise<T>): Promise<T> {
+  assertNoDuplicateExtensionAction(kind);
+  extensionActionInFlight = kind;
+  try {
+    return await fn();
+  } finally {
+    extensionActionInFlight = null;
+  }
+}
 
 chrome.runtime.onMessage.addListener((message: ProtocolMessage, _sender, sendResponse) => {
   handleMessage(message)
@@ -79,12 +157,44 @@ async function handleMessage(message: ProtocolMessage): Promise<ProtocolResponse
       return relayFillPageOverlay(message.show, message.status, message.title);
     case 'SRIVANI_BOOKING_ASSIST_REQUEST':
       return srivaniBookingAssistActiveTab(message);
+    case 'GET_PAGE_MONITOR':
+      return getPageMonitorSnapshot();
     default:
       return { ok: false, error: 'Unknown message', errorCode: 'UNSUPPORTED' };
   }
 }
 
+async function getPageMonitorSnapshot(): Promise<ProtocolResponse> {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tab?.id) {
+    try {
+      const live = (await chrome.tabs.sendMessage(tab.id, { type: 'PAGE_MONITOR_REQUEST' })) as {
+        snapshot?: Record<string, unknown>;
+      };
+      if (live?.snapshot) {
+        latestPageMonitor = live.snapshot;
+        return { ok: true, snapshot: live.snapshot };
+      }
+    } catch {
+      /* tab may not host monitor script */
+    }
+  }
+  return {
+    ok: true,
+    snapshot: latestPageMonitor ?? {
+      supported: false,
+      source: 'none',
+      observedAtUtc: new Date().toISOString(),
+      quota: {},
+      continue: {},
+      payment: {},
+    },
+  };
+}
+
 async function srivaniBookingAssistActiveTab(message: Extract<ProtocolMessage, { type: 'SRIVANI_BOOKING_ASSIST_REQUEST' }>): Promise<ProtocolResponse> {
+  return withExtensionActionLock('assist', async () => {
+  assertPageAssistAllowed();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) throw new Error('No active tab');
   let response: Record<string, unknown>;
@@ -100,6 +210,7 @@ async function srivaniBookingAssistActiveTab(message: Extract<ProtocolMessage, {
   }
   const success = Boolean(response?.success);
   return { ok: success, fillReport: response, validation: { ok: success } };
+  });
 }
 
 async function relayFillPageOverlay(show: boolean, status?: string, title?: string): Promise<ProtocolResponse> {
@@ -295,6 +406,8 @@ async function refreshSessionFromBackend(session: ExtensionSession) {
 }
 
 async function fillActiveTab(allowOverwrite: boolean, validateOnly = false): Promise<ProtocolResponse> {
+  return withExtensionActionLock('fill', async () => {
+  if (!validateOnly) assertPageAssistAllowed();
   let session = await requireSession();
   session = await refreshSessionFromBackend(session);
   cachedPayload = await loadPayload(session);
@@ -361,6 +474,7 @@ async function fillActiveTab(allowOverwrite: boolean, validateOnly = false): Pro
     fillReport: response,
     validation: response.validation,
   };
+  });
 }
 
 async function disconnect(): Promise<ProtocolResponse> {
@@ -380,7 +494,9 @@ async function disconnect(): Promise<ProtocolResponse> {
 async function requireSession(): Promise<ExtensionSession> {
   const session = await loadSession();
   if (!session?.connected || !session.accessToken) {
-    throw Object.assign(new Error('Extension not paired — paste token from DarshanDesk'), { code: 'NOT_PAIRED' });
+    throw Object.assign(new Error('Extension session not connected — open Preparation and mark ready, then Reconnect here'), {
+      code: 'NOT_PAIRED',
+    });
   }
   return session;
 }

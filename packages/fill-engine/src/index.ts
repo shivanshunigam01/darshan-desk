@@ -5,3 +5,5 @@ export * from './mappings/mockSrivaniV1.js';
 export * from './rowMapping.js';
 export * from './livePilgrimFill.js';
 export * from './liveSrivaniAssist.js';
+export * from './pageMonitor.js';
+export * from './bookingDiagnostics.js';
